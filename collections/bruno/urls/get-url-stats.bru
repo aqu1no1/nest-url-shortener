@@ -1,0 +1,31 @@
+meta {
+  name: Estatísticas da URL
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/shorten/{{shortCode}}/stats
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: {{lang}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.accessCount: isNumber
+}
+
+docs {
+  Retorna `accessCount` sem contar acesso.
+
+  **200 OK**
+  ```json
+  { "data": { "id": "1", "url": "https://www.example.com/some/long/url", "shortCode": "abc123", "createdAt": "2026-10-19T12:00:00.000Z", "updatedAt": "2026-10-19T12:00:00.000Z", "accessCount": 10 } }
+  ```
+
+  **404 Not Found** responde em `application/problem+json`.
+}

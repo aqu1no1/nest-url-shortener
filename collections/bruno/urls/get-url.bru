@@ -1,0 +1,34 @@
+meta {
+  name: Recuperar URL
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/shorten/{{shortCode}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: {{lang}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.shortCode: eq {{shortCode}}
+}
+
+docs {
+  Retorna a URL original e conta um acesso.
+
+  **200 OK**
+  ```json
+  { "data": { "id": "1", "url": "https://www.example.com/some/long/url", "shortCode": "abc123", "createdAt": "2026-10-19T12:00:00.000Z", "updatedAt": "2026-10-19T12:00:00.000Z" } }
+  ```
+
+  **404 Not Found** (`application/problem+json`)
+  ```json
+  { "type": "about:blank", "title": "Não encontrado", "status": 404, "detail": "Não foi possível encontrar a URL.", "instance": "/shorten/nao-existe" }
+  ```
+}

@@ -82,14 +82,29 @@ Erro de validação (`?lang=en`):
 ```text
 collections/
 ├── postman/
-│   ├── url-shortener.postman_collection.json
-│   └── local.postman_environment.json
+│   ├── url-shortener.postman_collection.json   # URLs, Health, Docs (com testes e exemplos)
+│   └── local.postman_environment.json          # baseUrl, shortCode, lang
 └── bruno/
     ├── bruno.json
-    ├── environments/local.bru
-    └── docs/openapi-json.bru
+    ├── environments/local.bru                  # baseUrl, shortCode, lang
+    ├── urls/
+    │   ├── create-url.bru                      # 1. POST   /shorten (salva o shortCode)
+    │   ├── get-url.bru                         # 2. GET    /shorten/:code
+    │   ├── update-url.bru                      # 3. PUT    /shorten/:code
+    │   ├── get-url-stats.bru                   # 4. GET    /shorten/:code/stats
+    │   └── delete-url.bru                      # 5. DELETE /shorten/:code
+    ├── health/health.bru                       # GET /health
+    └── docs/openapi-json.bru                   # GET /docs/openapi.json
 ```
 
-- Variáveis: `baseUrl` (`http://localhost:3000`) e `shortCode`.
-- Hoje há apenas o request `Docs / OpenAPI JSON`. Cada endpoint entra na pasta `URLs` junto com a sua issue (URL-13 a URL-17), com exemplos de 201/200/204/400/404.
+- Variáveis: `baseUrl` (`http://localhost:3000`), `shortCode` (preenchida pelo `Criar URL`) e `lang` (`pt-BR` ou `en`, enviada no `Accept-Language`).
+- A pasta `URLs` roda em ordem: criar → recuperar → atualizar → estatísticas → excluir. Rodar a collection inteira exercita o fluxo completo.
+- Cada request tem testes/asserções. Os exemplos de 201/200/204/400/404 (e 503 no health) ficam salvos no Postman (_Examples_) e na aba _Docs_ do Bruno.
+- Rodar pela linha de comando, com a app de pé:
+
+  ```bash
+  npx newman run collections/postman/url-shortener.postman_collection.json -e collections/postman/local.postman_environment.json
+  cd collections/bruno && npx @usebruno/cli run --env local
+  ```
+
 - Nenhum segredo real é versionado.

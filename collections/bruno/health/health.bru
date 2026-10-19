@@ -1,0 +1,35 @@
+meta {
+  name: Health check
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: {{lang}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq ok
+  res.body.database: eq up
+}
+
+docs {
+  Verifica a app e o PostgreSQL, sem o envelope `{ data }`.
+
+  **200 OK**
+  ```json
+  { "status": "ok", "database": "up", "timestamp": "2026-10-19T12:00:00.000Z" }
+  ```
+
+  **503 Service Unavailable** (`application/problem+json`)
+  ```json
+  { "type": "about:blank", "title": "Serviço indisponível", "status": 503, "detail": "O banco de dados está indisponível.", "instance": "/health" }
+  ```
+}

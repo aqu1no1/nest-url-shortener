@@ -1,13 +1,650 @@
 {
   "info": {
     "name": "URL Shortener",
-    "description": "Collection da API nest-url-shortener. Use o environment local.",
+    "description": "API nest-url-shortener (roadmap.sh URL Shortening Service). Use o environment `local`. Rode as requisições de `URLs` em ordem: `Criar URL` salva o `shortCode` usado pelas demais. Troque `lang` para `en` para mensagens em inglês.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "URLs",
-      "item": []
+      "item": [
+        {
+          "name": "Criar URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "{{lang}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shorten",
+              "host": ["{{baseUrl}}"],
+              "path": ["shorten"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://www.example.com/some/long/url\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Encurta uma URL e salva o `shortCode` na variável de ambiente."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const created = pm.response.json().data;",
+                  "pm.test('retorna { data } com shortCode', () => pm.expect(created.shortCode).to.match(/^[0-9A-Za-z]{6}$/));",
+                  "pm.environment.set('shortCode', created.shortCode);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"https://www.example.com/some/long/url\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"nao-e-url\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"Requisi\\u00e7\\u00e3o inv\\u00e1lida\",\n  \"status\": 400,\n  \"detail\": \"A requisi\\u00e7\\u00e3o cont\\u00e9m campos inv\\u00e1lidos.\",\n  \"instance\": \"/shorten\",\n  \"errors\": [\n    {\n      \"field\": \"url\",\n      \"messages\": [\n        \"url deve ser uma URL v\\u00e1lida com http ou https.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Recuperar URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "{{lang}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shorten", "{{shortCode}}"]
+            },
+            "description": "Retorna a URL original e conta um acesso."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('mesmo shortCode', () => pm.expect(pm.response.json().data.shortCode).to.eql(pm.environment.get('shortCode')));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "{{shortCode}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/nao-existe",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "nao-existe"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"N\\u00e3o encontrado\",\n  \"status\": 404,\n  \"detail\": \"N\\u00e3o foi poss\\u00edvel encontrar a URL.\",\n  \"instance\": \"/shorten/nao-existe\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar URL",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "{{lang}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shorten", "{{shortCode}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://www.example.com/some/updated/url\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Troca a URL original mantendo o `shortCode`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('URL atualizada', () => pm.expect(pm.response.json().data.url).to.eql('https://www.example.com/some/updated/url'));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "{{shortCode}}"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"https://www.example.com/some/updated/url\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/updated/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:30:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "{{shortCode}}"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"Requisi\\u00e7\\u00e3o inv\\u00e1lida\",\n  \"status\": 400,\n  \"detail\": \"A requisi\\u00e7\\u00e3o cont\\u00e9m campos inv\\u00e1lidos.\",\n  \"instance\": \"/shorten/abc123\",\n  \"errors\": [\n    {\n      \"field\": \"url\",\n      \"messages\": [\n        \"url deve ser uma URL v\\u00e1lida com http ou https.\",\n        \"url \\u00e9 obrigat\\u00f3ria.\",\n        \"url deve ser um texto.\"\n      ]\n    }\n  ]\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/nao-existe",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "nao-existe"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"https://www.example.com/some/updated/url\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"N\\u00e3o encontrado\",\n  \"status\": 404,\n  \"detail\": \"N\\u00e3o foi poss\\u00edvel encontrar a URL.\",\n  \"instance\": \"/shorten/nao-existe\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Estatísticas da URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "{{lang}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shorten/{{shortCode}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["shorten", "{{shortCode}}", "stats"]
+            },
+            "description": "Retorna `accessCount` sem contar acesso."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('accessCount é número', () => pm.expect(pm.response.json().data.accessCount).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/{{shortCode}}/stats",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "{{shortCode}}", "stats"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\",\n    \"accessCount\": 10\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/nao-existe/stats",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "nao-existe", "stats"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"N\\u00e3o encontrado\",\n  \"status\": 404,\n  \"detail\": \"N\\u00e3o foi poss\\u00edvel encontrar a URL.\",\n  \"instance\": \"/shorten/nao-existe/stats\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Excluir URL",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "{{lang}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shorten", "{{shortCode}}"]
+            },
+            "description": "Exclui a URL. Responde 204 sem corpo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+                  "pm.test('sem corpo', () => pm.expect(pm.response.text()).to.eql(''));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/{{shortCode}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "{{shortCode}}"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shorten/nao-existe",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["shorten", "nao-existe"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"N\\u00e3o encontrado\",\n  \"status\": 404,\n  \"detail\": \"N\\u00e3o foi poss\\u00edvel encontrar a URL.\",\n  \"instance\": \"/shorten/nao-existe\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "{{lang}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica a app e o PostgreSQL. Não usa o envelope `{ data }`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('status ok', () => pm.expect(pm.response.json()).to.include({ status: 'ok', database: 'up' }));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"database\": \"up\",\n  \"timestamp\": \"2026-10-19T12:00:00.000Z\"\n}"
+            },
+            {
+              "name": "503 Service Unavailable",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept-Language",
+                    "value": "{{lang}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"Servi\\u00e7o indispon\\u00edvel\",\n  \"status\": 503,\n  \"detail\": \"O banco de dados est\\u00e1 indispon\\u00edvel.\",\n  \"instance\": \"/health\"\n}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Docs",
@@ -23,6 +660,15 @@
               "path": ["docs", "openapi.json"]
             }
           },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ],
           "response": []
         }
       ]

@@ -1,0 +1,37 @@
+meta {
+  name: Atualizar URL
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/shorten/{{shortCode}}
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: {{lang}}
+}
+
+body:json {
+  {
+    "url": "https://www.example.com/some/updated/url"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.url: eq https://www.example.com/some/updated/url
+}
+
+docs {
+  Troca a URL original mantendo o `shortCode`.
+
+  **200 OK**
+  ```json
+  { "data": { "id": "1", "url": "https://www.example.com/some/updated/url", "shortCode": "abc123", "createdAt": "2026-10-19T12:00:00.000Z", "updatedAt": "2026-10-19T12:30:00.000Z" } }
+  ```
+
+  **400 Bad Request** e **404 Not Found** respondem em `application/problem+json`.
+}

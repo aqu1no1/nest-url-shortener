@@ -1,0 +1,46 @@
+meta {
+  name: Criar URL
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/shorten
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: {{lang}}
+}
+
+body:json {
+  {
+    "url": "https://www.example.com/some/long/url"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.shortCode: matches ^[0-9A-Za-z]{6}$
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("shortCode", res.body.data.shortCode);
+  }
+}
+
+docs {
+  Encurta uma URL e salva o `shortCode` na variável de ambiente.
+
+  **201 Created**
+  ```json
+  { "data": { "id": "1", "url": "https://www.example.com/some/long/url", "shortCode": "abc123", "createdAt": "2026-10-19T12:00:00.000Z", "updatedAt": "2026-10-19T12:00:00.000Z" } }
+  ```
+
+  **400 Bad Request** (`application/problem+json`)
+  ```json
+  { "type": "about:blank", "title": "Requisição inválida", "status": 400, "detail": "A requisição contém campos inválidos.", "instance": "/shorten", "errors": [{ "field": "url", "messages": ["url deve ser uma URL válida com http ou https."] }] }
+  ```
+}

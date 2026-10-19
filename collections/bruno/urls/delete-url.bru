@@ -1,0 +1,23 @@
+meta {
+  name: Excluir URL
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/shorten/{{shortCode}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: {{lang}}
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Exclui a URL. **204 No Content** sem corpo; **404 Not Found** em `application/problem+json` quando o código não existe.
+}
