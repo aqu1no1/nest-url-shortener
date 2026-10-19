@@ -12,9 +12,9 @@ src/
 │   ├── interceptors/    # ResponseEnvelopeInterceptor { data } (v0.4.0)
 │   └── interfaces/      # ApiResponse<T>                       (v0.4.0)
 ├── config/              # configuration.ts, env.validation.ts, swagger.ts
-├── generated/prisma/    # Prisma Client gerado — não editar   (v0.2.0)
+├── generated/prisma/    # Prisma Client gerado — não editar
 ├── modules/
-│   ├── prisma/          # PrismaModule + PrismaService         (v0.2.0)
+│   ├── prisma/          # PrismaModule + PrismaService
 │   ├── urls/            # Regras do encurtador                 (v0.3.0)
 │   └── health/          # Opcional
 ├── app.module.ts
@@ -38,7 +38,7 @@ flowchart TD
 - **Controller**: rotas, parâmetros e códigos HTTP; chama o service.
 - **Service**: regras de criar, buscar, atualizar, excluir e contar acessos. Acessa o banco diretamente pelo `PrismaService` (sem `urls.repository.ts`).
 - **`PrismaModule`**: registra (`providers`) e exporta (`exports`) o `PrismaService`; não tem controller.
-- **`PrismaService`**: estende o `PrismaClient` (driver adapter `@prisma/adapter-pg`), conecta em `onModuleInit` e desconecta em `onModuleDestroy`. `main.ts` chama `app.enableShutdownHooks()`.
+- **`PrismaService`**: estende o `PrismaClient` (driver adapter `@prisma/adapter-pg`), conecta e valida com `SELECT 1` em `onModuleInit` e desconecta em `onModuleDestroy`. Hoje é importado pelo `AppModule` (a app não sobe sem banco); o `UrlsModule` também o importará. `main.ts` chama `app.enableShutdownHooks()`.
 
 ### `src/modules/urls/`
 

@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag SemVer (ex.: v0.1.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Marcar como pre-release?'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nestjs-manual-release
+  cancel-in-progress: false
+
+jobs:
+  validate_version:
+    name: Validar versão, branch e CHANGELOG
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verificar branch e formato da tag
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo '::error::Execute a release selecionando a branch main.'
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo '::error::Versão inválida. Exemplo: v0.1.0 ou v1.0.0-rc.1.'
+            exit 1
+          fi
+
+          if [[ -n "$(git ls-remote --tags origin "refs/tags/$VERSION")" ]]; then
+            echo "::error::A tag $VERSION já existe no repositório."
+            exit 1
+          fi
+
+      - name: Validar package.json e CHANGELOG.md
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$VERSION" != "v$PACKAGE_VERSION" ]]; then
+            echo "::error::package.json tem $PACKAGE_VERSION; a versão pedida é $VERSION."
+            exit 1
+          fi
+
+          if [[ ! -f CHANGELOG.md ]] || ! grep -Fq "## [$PACKAGE_VERSION]" CHANGELOG.md; then
+            echo "::error::Falta a seção ## [$PACKAGE_VERSION] no CHANGELOG.md."
+            exit 1
+          fi
+
+  checks:
+    name: Executar a CI antes de publicar
+    needs: validate_version
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Criar tag e GitHub Release
+    needs: [validate_version, checks]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Extrair notas do CHANGELOG
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          PACKAGE_VERSION="${VERSION#v}"
+          awk -v header="## [$PACKAGE_VERSION]" '
+            index($0, header) == 1 { in_section=1; next }
+            in_section && /^## \[/ {exit}
+            in_section {print}
+          ' CHANGELOG.md > release-notes.md
+
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "::error::A seção $PACKAGE_VERSION do CHANGELOG está vazia."
+            exit 1
+          fi
+
+      - name: Publicar GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          args=(
+            --repo "$GITHUB_REPOSITORY"
+            --target "$GITHUB_SHA"
+            --title "$VERSION"
+            --notes-file release-notes.md
+            --fail-on-no-commits
+          )
+
+          if [[ "$PRERELEASE" == 'true' ]]; then
+            args+=(--prerelease)
+          fi
+
+          gh release create "$VERSION" "${args[@]}"

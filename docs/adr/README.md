@@ -4,9 +4,9 @@ Registro das decisões arquiteturais importantes. Cada ADR é um arquivo `NNNN-t
 
 ## Índice
 
-| #   | Decisão                         | Status |
-| --- | ------------------------------- | ------ |
-| —   | _Nenhuma ADR registrada ainda._ | —      |
+| #                                       | Decisão                                           | Status |
+| --------------------------------------- | ------------------------------------------------- | ------ |
+| [0001](0001-prisma-7-driver-adapter.md) | Prisma ORM 7 com driver adapter `pg` e client CJS | Aceita |
 
 ## Template
 

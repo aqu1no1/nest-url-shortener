@@ -11,6 +11,7 @@
   },
   "rules": {
     "typescript/no-explicit-any": "warn",
+    "import/no-unassigned-import": ["warn", { "allow": ["dotenv/config"] }],
     "typescript/no-extraneous-class": ["warn", { "allowWithDecorator": true }],
     "typescript/consistent-type-imports": "off",
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]

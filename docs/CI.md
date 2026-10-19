@@ -3,30 +3,68 @@
 ```text
 .github/
 └── workflows/
-    ├── ci.yml       # push e pull request          (v0.5.0)
-    └── release.yml  # somente workflow_dispatch    (v0.5.0)
+    ├── ci.yml       # push e pull request na main; também reutilizado pelo release
+    └── release.yml  # somente workflow_dispatch
 ```
 
 ## `ci.yml` — automático
 
-```mermaid
-flowchart TD
-    A[Push ou Pull Request] --> B[Instalar pnpm e dependências]
-    B --> C[Prisma Client Generate]
-    C --> D[Oxlint e Oxfmt check]
-    D --> E[Typecheck e build]
-    E --> F[Testes unitários]
-    F --> G[PostgreSQL de testes temporário]
-    G --> H[Migrations, integração e E2E]
-    H --> I[Teardown]
-    I --> J[CI aprovada]
+```text
+Push na main / Pull Request
+              │
+       ┌──────┴───────┐
+       ▼              ▼
+     Quality       Integration
+       │              │
+     Oxlint         Docker
+     Oxfmt          PostgreSQL
+     Typecheck      Migrations
+     Build          Vitest Integration
+     Unit Tests     Vitest E2E
+       │              │
+       └──────┬───────┘
+              ▼
+         CI aprovada
 ```
 
-Jobs podem rodar em paralelo, desde que não compartilhem o mesmo banco temporário de forma insegura. `test:docker` cuida da criação, preparo e limpeza do banco.
+| Job           | Passos                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| `quality`     | `pnpm install --frozen-lockfile`, `prisma:generate`, `lint`, `format:check`, `typecheck`, `build`, `test:unit` |
+| `integration` | Service container `postgres:17-alpine` (porta 5433), `db:migrate:deploy`, `test:integration`, `test:e2e`       |
+
+- O pnpm vem do `packageManager` do `package.json` (sem `version` no `pnpm/action-setup`).
+- Hoje o job `integration` usa um service container do GitHub Actions. Na URL-20 ele passa a rodar `pnpm test:docker`, que sobe o `docker-compose.test.yml`, cria um banco por worker, aplica migrations e faz o teardown.
+- Para as falhas bloquearem o merge, ative a branch protection da `main` exigindo os checks `quality` e `integration` (configuração do GitHub).
 
 ## `release.yml` — manual (**Run workflow**)
 
-Disparado apenas por `workflow_dispatch`, com entradas `version` (ex.: `v0.1.0`) e `prerelease` (boolean), e `concurrency: manual-release`.
+```text
+Actions → Release → Run workflow
+                 │
+                 ▼
+       Informar versão v0.1.0
+                 │
+                 ▼
+       Validar branch e versão
+       Conferir package.json
+       Conferir CHANGELOG.md
+       Verificar tag existente
+                 │
+                 ▼
+          Executar CI inteira
+                 │
+          ┌──────┴──────┐
+          ▼             ▼
+        Falha         Sucesso
+          │             │
+          ▼             ▼
+     Não publica    Criar tag Git
+                    Publicar Release
+```
+
+Disparado apenas por `workflow_dispatch`, com entradas `version` (ex.: `v0.1.0`) e `prerelease` (boolean), e `concurrency: nestjs-manual-release`. Jobs: `validate_version` → `checks` (reusa o `ci.yml` via `workflow_call`) → `publish`.
+
+> Antes de publicar uma versão, mova as entradas de `[Unreleased]` para uma seção `## [X.Y.Z]` no `CHANGELOG.md` e ajuste o `version` do `package.json`; o workflow recusa a publicação sem isso.
 
 1. **Actions → Release → Run workflow** na branch `main`.
 2. Validar que roda na `main` e que a versão segue SemVer.

@@ -42,9 +42,28 @@ Nunca versionar `.env` nem `.env.test`, apenas os arquivos `.example`.
 - `ConfigModule` é global (`isGlobal: true`) e carrega `.env.test` quando `NODE_ENV=test` (o Vitest define isso por padrão); nos demais casos, `.env`.
 - Leitura tipada: `ConfigService<AppConfig, true>` + `config.get('app.port', { infer: true })`.
 
-## Prisma CLI _(v0.2.0)_
+## Prisma
 
-O Prisma CLI (`migrate`, `generate`) obtém `DATABASE_URL` em `prisma.config.ts`, independentemente do bootstrap do `ConfigModule`.
+| Arquivo                                | Função                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `prisma/schema.prisma`                 | Generator `prisma-client` (CJS) e models                                 |
+| `prisma.config.ts`                     | Configuração do Prisma CLI: schema, pasta de migrations e `DATABASE_URL` |
+| `src/generated/prisma/`                | Client gerado (não versionado, não editar)                               |
+| `src/modules/prisma/prisma.service.ts` | `PrismaClient` + `@prisma/adapter-pg` com a URL vinda do `ConfigService` |
+
+- O **Prisma CLI** não passa pelo `ConfigModule`: o `prisma.config.ts` carrega o `.env` com `dotenv/config` e lê `process.env.DATABASE_URL`. Uma variável já exportada no shell tem prioridade sobre o `.env`.
+- A **app** lê a URL pelo `ConfigService` (`database.url`).
+- O client é gerado automaticamente no `pnpm install` (`postinstall`) e com `pnpm prisma:generate`.
+- No startup, o `PrismaService` executa `SELECT 1`: com o driver adapter, o `$connect()` não abre conexão, então sem essa consulta a app subiria mesmo sem banco.
+
+```bash
+pnpm db:migrate --name <nome>   # prisma migrate dev: cria e aplica migration (dev)
+pnpm db:migrate:deploy          # aplica migrations pendentes (CI / outros ambientes)
+pnpm db:migrate:reset           # recria o banco de dev e reaplica tudo
+pnpm db:studio                  # Prisma Studio
+```
+
+Sempre crie migrations com `pnpm db:migrate --name ...`; nunca escreva a pasta/SQL à mão.
 
 ## Banco de desenvolvimento
 

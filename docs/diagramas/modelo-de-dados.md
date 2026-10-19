@@ -39,5 +39,7 @@ model Url {
 ## Migrations
 
 - **Prisma Migrate** é o único mecanismo de migrations do repositório.
+- Migration inicial: `prisma/migrations/20261019183145_create_urls_table/migration.sql` (tabela `urls`, `urls_pkey` e índice único `urls_short_code_key`).
+- Criar uma nova: `pnpm db:migrate --name <nome>`. Aplicar em outro banco: `pnpm db:migrate:deploy`.
 - Não há `UP`/`DOWN` simétrico: para desfazer em ambientes compartilhados, criar uma migration corretiva.
 - O incremento de `access_count` deve ser **atômico** (`{ increment: 1 }`).

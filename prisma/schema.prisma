@@ -1,0 +1,20 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Url {
+  id          Int      @id @default(autoincrement())
+  url         String   @db.Text
+  shortCode   String   @unique @map("short_code") @db.VarChar(12)
+  accessCount Int      @default(0) @map("access_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("urls")
+}

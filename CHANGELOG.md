@@ -19,3 +19,7 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Collections Postman e Bruno com environment `local` (`baseUrl`, `shortCode`).
 - PostgreSQL de desenvolvimento via `docker-compose.yml`, configurado pelas variáveis `POSTGRES_*` do `.env`, e scripts `db:up` / `db:down`.
 - Documentação em `docs/`.
+- Prisma ORM 7 com `@prisma/adapter-pg`, `prisma.config.ts`, `PrismaModule` e `PrismaService` (falha no startup sem banco).
+- Tabela `urls` e primeira migration (`create_urls_table`).
+- Scripts `prisma:generate`, `db:migrate`, `db:migrate:deploy`, `db:migrate:reset` e `db:studio`.
+- GitHub Actions: `ci.yml` (qualidade + integração com PostgreSQL) e `release.yml` (manual).
