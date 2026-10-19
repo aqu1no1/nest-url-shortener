@@ -1,15 +1,6 @@
 import Joi from 'joi';
-
-export const NODE_ENVIRONMENTS = ['development', 'test', 'production'] as const;
-
-export type NodeEnvironment = (typeof NODE_ENVIRONMENTS)[number];
-
-export interface EnvironmentVariables {
-  NODE_ENV: NodeEnvironment;
-  PORT: number;
-  DATABASE_URL: string;
-  SWAGGER_ENABLED: boolean;
-}
+import { NODE_ENVIRONMENTS } from '@/common/constants/environment.constants';
+import type { EnvironmentVariables } from '@/common/interfaces/environment-variables.interface';
 
 export const envValidationSchema = Joi.object<EnvironmentVariables>({
   NODE_ENV: Joi.string()

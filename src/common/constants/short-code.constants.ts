@@ -1,0 +1,7 @@
+export const SHORT_CODE_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+export const DEFAULT_SHORT_CODE_LENGTH = 6;
+
+export const MAX_SHORT_CODE_LENGTH = 12;
+
+export const MAX_SHORT_CODE_ATTEMPTS = 5;

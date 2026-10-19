@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { assertTestDatabase, workerDatabaseUrl } from '../support/setup/test-database.mjs';
+import { assertTestDatabase, workerDatabaseUrl } from '@test/support/setup/test-database.mjs';
 
 const BASE_URL = 'postgresql://postgres:postgres@localhost:5433/url_shortener_test';
 

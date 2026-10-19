@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { AppConfig } from '@/config/configuration';
+import type { AppConfig } from '@/common/interfaces/app-config.interface';
 import { PrismaService } from '@/modules/prisma/prisma.service';
 
 const createService = () => {

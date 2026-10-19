@@ -1,8 +1,10 @@
 import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
-export const SWAGGER_PATH = 'docs';
-export const OPENAPI_JSON_PATH = `${SWAGGER_PATH}/openapi.json`;
+import {
+  OPENAPI_JSON_PATH,
+  OPENAPI_YAML_PATH,
+  SWAGGER_PATH,
+} from '@/common/constants/swagger.constants';
 
 export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
@@ -12,12 +14,13 @@ export function setupSwagger(app: INestApplication): void {
     )
     .setVersion(process.env.npm_package_version ?? '0.1.0')
     .addTag('URLs', 'Encurtamento, consulta, atualização, exclusão e estatísticas de URLs')
+    .addTag('Health', 'Disponibilidade da aplicação e do PostgreSQL')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup(SWAGGER_PATH, app, document, {
     jsonDocumentUrl: OPENAPI_JSON_PATH,
-    yamlDocumentUrl: `${SWAGGER_PATH}/openapi.yaml`,
+    yamlDocumentUrl: OPENAPI_YAML_PATH,
   });
 }

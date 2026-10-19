@@ -46,6 +46,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "joi": "^18.3.0",
+    "nestjs-i18n": "^10.8.5",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
@@ -58,11 +59,13 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
     "@vitest/coverage-v8": "^5.0.5",
     "dotenv": "^18.0.8",
     "oxfmt": "^0.73.0",
     "oxlint": "^1.88.0",
     "prisma": "^7.10.1",
+    "supertest": "^7.3.1",
     "typescript": "^6.0.3",
     "unplugin-swc": "^2.0.0",
     "vitest": "^5.0.5"

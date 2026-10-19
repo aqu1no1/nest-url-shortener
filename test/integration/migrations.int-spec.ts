@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { Prisma, type PrismaClient } from '@/generated/prisma/client';
-import { createTestPrismaClient } from '../support/database/client';
-import { truncateAllTables } from '../support/database/cleanup';
+import { truncateAllTables } from '@test/support/database/cleanup';
+import { createTestPrismaClient } from '@test/support/database/client';
 
 describe('migrations', () => {
   let prisma: PrismaClient;

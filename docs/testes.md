@@ -61,12 +61,14 @@ test/
 │   ├── migrations.int-spec.ts      # migration aplicada, colunas, defaults, UNIQUE, limpeza
 │   └── test-database.int-spec.ts   # guarda contra banco que não é de teste
 ├── e2e/
+│   └── urls.e2e-spec.ts            # HTTP real: envelope, 204, Problem Details, i18n pt-BR/en
 └── support/
     ├── database/
     │   ├── client.ts               # createTestPrismaClient()
     │   └── cleanup.ts              # truncateAllTables(prisma)
     ├── factories/                  # url.factory.ts (v0.3.0)
-    ├── helpers/                    # create-test-app.ts (v0.3.0)
+    ├── helpers/
+    │   └── create-test-app.ts      # app a partir do AppModule (mesmo pipe/interceptor/filtro)
     └── setup/
         ├── test-database.mjs       # guarda, .env.test e URL por worker
         ├── prepare-test-dbs.mjs    # cria 1–4 bancos e aplica migrations

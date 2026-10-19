@@ -7,6 +7,22 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Added
+
+- Esqueleto do `UrlsModule` (`UrlsController` em `/shorten` com a tag `URLs` e `UrlsService` com `PrismaService`), ainda sem endpoints.
+- DTOs `CreateUrlDto` / `UpdateUrlDto` com validação de URL http(s).
+- Responses `UrlResponse` / `UrlStatsResponse` com documentação no Swagger e conversão a partir do model.
+- `generateShortCode()` (base62, `crypto.randomInt`).
+- Endpoints `POST /shorten`, `GET /shorten/:code`, `PUT /shorten/:code`, `DELETE /shorten/:code` e `GET /shorten/:code/stats`, com documentação Swagger.
+- Contagem de acessos atômica no `GET /shorten/:code` (sem alterar `updatedAt`); colisões de código tratadas com novas tentativas.
+- Testes unitários do `UrlsService` e testes de integração com PostgreSQL.
+- Envelope `{ data }` nas respostas de sucesso (`ResponseEnvelopeInterceptor`, `@SkipResponseEnvelope()`), preservando 204 e respostas `{ data, meta }`.
+- Erros no formato RFC 9457 (`application/problem+json`) com `ProblemDetailsFilter`, incluindo `errors` por campo na validação e mensagem genérica em 5xx.
+- i18n com `nestjs-i18n`: pt-BR (padrão) e en, via `Accept-Language` ou `?lang=`, para validação, erros e Problem Details.
+- `@ApiDataResponse()` e `@ApiProblemResponse()` documentando envelope e Problem Details no Swagger.
+- Testes E2E (Supertest) do contrato HTTP.
+- `GET /health`: verifica a app e o PostgreSQL (`SELECT 1` com timeout de 3 s), sem envelope; responde 503 em Problem Details quando o banco está indisponível.
+
 ## [0.2.0] - 2026-10-19
 
 ### Added

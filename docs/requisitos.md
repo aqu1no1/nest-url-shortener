@@ -21,7 +21,7 @@ API REST para encurtar URLs com **NestJS, TypeScript, Prisma e PostgreSQL**, pri
 - O código curto (`shortCode`) é único e gerado aleatoriamente.
 - `accessCount` começa em 0 e é incrementado de forma **atômica**.
 - Enquanto não houver redirecionamento, o acesso é contado no `GET /shorten/:code` bem-sucedido, **não** no `/stats`.
-- Opcionais: `GET /:code` (redirecionamento) e `GET /health` (técnico; não conta como endpoint do desafio).
+- Opcionais: `GET /:code` (redirecionamento) e `GET /health` (técnico, já implementado; não conta como endpoint do desafio).
 - Não adicionar `GET /shorten` (listagem) sem uma nova decisão.
 
 ## Fora do MVP

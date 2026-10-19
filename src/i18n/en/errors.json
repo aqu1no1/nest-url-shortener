@@ -1,0 +1,4 @@
+{
+  "NOT_FOUND": "Could not find {entity}.",
+  "DATABASE_UNAVAILABLE": "The database is unavailable."
+}

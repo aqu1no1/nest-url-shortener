@@ -1,17 +1,5 @@
-import type { NodeEnvironment } from './env.validation';
-
-export interface AppConfig {
-  app: {
-    nodeEnv: NodeEnvironment;
-    port: number;
-  };
-  database: {
-    url: string;
-  };
-  swagger: {
-    enabled: boolean;
-  };
-}
+import type { AppConfig } from '@/common/interfaces/app-config.interface';
+import type { NodeEnvironment } from '@/common/interfaces/environment-variables.interface';
 
 export default (): AppConfig => ({
   app: {

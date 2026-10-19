@@ -1,22 +1,15 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
-import type { AppConfig } from '@/config/configuration';
-import { SWAGGER_PATH, setupSwagger } from '@/config/swagger';
+import { SWAGGER_PATH } from '@/common/constants/swagger.constants';
+import type { AppConfig } from '@/common/interfaces/app-config.interface';
+import { setupSwagger } from '@/config/swagger';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get<ConfigService<AppConfig, true>>(ConfigService);
   const logger = new Logger('Bootstrap');
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
 
   app.enableShutdownHooks();
 

@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@/generated/prisma/client';
-import { assertTestDatabase } from '../setup/test-database.mjs';
+import { assertTestDatabase } from '@test/support/setup/test-database.mjs';
 
 export async function truncateAllTables(prisma: PrismaClient): Promise<void> {
   assertTestDatabase(process.env.DATABASE_URL);

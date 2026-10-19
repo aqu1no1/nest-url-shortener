@@ -1,0 +1,6 @@
+{
+  "URL_REQUIRED": "url is required.",
+  "URL_STRING": "url must be a string.",
+  "URL_INVALID": "url must be a valid http or https URL.",
+  "PROPERTY_NOT_ALLOWED": "The property {property} is not allowed."
+}

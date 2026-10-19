@@ -1,4 +1,8 @@
-import { assertTestDatabase, loadTestEnv, workerDatabaseUrl } from './test-database.mjs';
+import {
+  assertTestDatabase,
+  loadTestEnv,
+  workerDatabaseUrl,
+} from '@test/support/setup/test-database.mjs';
 
 loadTestEnv();
 

@@ -1,0 +1,19 @@
+{
+  "HTTP": {
+    "400": "Requisição inválida",
+    "401": "Não autorizado",
+    "403": "Proibido",
+    "404": "Não encontrado",
+    "405": "Método não permitido",
+    "409": "Conflito",
+    "413": "Conteúdo muito grande",
+    "415": "Tipo de mídia não suportado",
+    "422": "Entidade não processável",
+    "429": "Muitas requisições",
+    "500": "Erro interno do servidor",
+    "503": "Serviço indisponível"
+  },
+  "VALIDATION_FAILED": "A requisição contém campos inválidos.",
+  "INTERNAL_ERROR": "Ocorreu um erro inesperado.",
+  "ROUTE_NOT_FOUND": "A rota {method} {path} não existe."
+}

@@ -8,5 +8,9 @@
   "trailingComma": "all",
   "arrowParens": "always",
   "endOfLine": "lf",
-  "ignorePatterns": ["pnpm-lock.yaml", "dist", "coverage", "src/generated", "prisma/migrations"]
+  "ignorePatterns": ["pnpm-lock.yaml", "dist", "coverage", "src/generated", "prisma/migrations"],
+  "sortImports": {
+    "internalPattern": ["@/", "@test/"],
+    "newlinesBetween": false
+  }
 }

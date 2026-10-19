@@ -1,0 +1,1 @@
+export const DATABASE_CHECK_TIMEOUT_MS = 3000;
