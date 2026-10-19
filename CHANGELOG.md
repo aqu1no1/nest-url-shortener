@@ -1,0 +1,21 @@
+# Changelog
+
+Todas as mudanças relevantes deste projeto são documentadas aqui.
+
+O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/)
+e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
+
+## [Unreleased]
+
+### Added
+
+- Esqueleto NestJS com pnpm e TypeScript (alias `@/`).
+- Configuração com `@nestjs/config`, `ConfigService` tipado e validação Joi.
+- Swagger UI em `/docs` e OpenAPI JSON em `/docs/openapi.json`.
+- `ValidationPipe` global e shutdown hooks.
+- Oxlint e Oxfmt; configurações de VS Code e Zed.
+- Estrutura de testes com Vitest + SWC: um `vitest.config.mts` com os projetos `unit`, `integration` e `e2e` e pastas `test/`.
+- Tag `URLs` no OpenAPI.
+- Collections Postman e Bruno com environment `local` (`baseUrl`, `shortCode`).
+- PostgreSQL de desenvolvimento via `docker-compose.yml`, configurado pelas variáveis `POSTGRES_*` do `.env`, e scripts `db:up` / `db:down`.
+- Documentação em `docs/`.

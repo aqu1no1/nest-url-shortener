@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "URL Shortener",
+    "description": "Collection da API nest-url-shortener. Use o environment local.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "URLs",
+      "item": []
+    },
+    {
+      "name": "Docs",
+      "item": [
+        {
+          "name": "OpenAPI JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs/openapi.json",
+              "host": ["{{baseUrl}}"],
+              "path": ["docs", "openapi.json"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
