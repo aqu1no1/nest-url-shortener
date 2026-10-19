@@ -34,7 +34,11 @@ Push na main / Pull Request
 
 - O pnpm vem do `packageManager` do `package.json` (sem `version` no `pnpm/action-setup`).
 - O job `integration` roda exatamente o mesmo `pnpm test:docker` usado localmente; o runner do GitHub já tem Docker e Compose.
-- Para as falhas bloquearem o merge, ative a branch protection da `main` exigindo os checks `quality` e `integration` (configuração do GitHub).
+- **Branch protection da `main`** (configurada no GitHub):
+  - checks obrigatórios para merge: `Qualidade, build e testes unitários` e `Integração e E2E (PostgreSQL isolado)`;
+  - sem force-push e sem exclusão da `main`;
+  - administradores podem dar push direto (`enforce_admins: false`); PRs só fazem merge com a CI verde.
+  - Se um job for renomeado no `ci.yml`, atualize os checks obrigatórios em Settings → Branches.
 
 ## `release.yml` — manual (**Run workflow**)
 
