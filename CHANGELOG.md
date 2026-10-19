@@ -7,6 +7,8 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-19
+
 ### Added
 
 - PostgreSQL de desenvolvimento via `docker-compose.yml`, configurado pelas variáveis `POSTGRES_*` do `.env`, e scripts `db:up` / `db:down`.
@@ -32,5 +34,6 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Collections Postman e Bruno com environment `local` (`baseUrl`, `shortCode`).
 - Documentação em `docs/`.
 
-[Unreleased]: https://github.com/aqu1no1/nest-url-shortener/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/aqu1no1/nest-url-shortener/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/aqu1no1/nest-url-shortener/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/aqu1no1/nest-url-shortener/releases/tag/v0.1.0

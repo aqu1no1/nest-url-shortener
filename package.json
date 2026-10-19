@@ -1,6 +1,6 @@
 {
   "name": "nest-url-shortener",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A URL shortening REST API built with NestJS, Prisma, and PostgreSQL.",
   "license": "UNLICENSED",
