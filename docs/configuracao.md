@@ -75,4 +75,4 @@ pnpm db:down   # docker compose down (mantém o volume)
 - O Compose lê o `.env` da raiz automaticamente e usa os `POSTGRES_*`; sem eles, aplica os padrões da tabela acima.
 - Os dados ficam no volume `url-shortener_postgres-data`. Para apagar: `docker compose down -v`.
 - Valores padrão **apenas para desenvolvimento local**.
-- O banco de testes (`docker-compose.test.yml`) é da URL-12.
+- Banco de testes: `docker-compose.test.yml` + `.env.test` (`POSTGRES_PORT=5433`, `url_shortener_test`). Veja [Testes](testes.md).

@@ -17,6 +17,9 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
+    "db:test:up": "docker compose -f docker-compose.test.yml --env-file .env.test up -d --wait",
+    "db:test:prepare": "node test/support/setup/prepare-test-dbs.mjs",
+    "db:test:down": "docker compose -f docker-compose.test.yml --env-file .env.test down -v",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -25,7 +28,7 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:unit:watch": "vitest --project unit",
-    "test:integration": "vitest run --project integration --passWithNoTests",
+    "test:integration": "vitest run --project integration",
     "test:e2e": "vitest run --project e2e --passWithNoTests",
     "test:cov": "vitest run --project unit --coverage"
   },

@@ -29,12 +29,14 @@ export default defineConfig({
         test: {
           name: 'integration',
           include: ['test/integration/**/*.int-spec.ts'],
+          setupFiles: ['./test/support/setup/worker-database.ts'],
         },
       },
       {
         test: {
           name: 'e2e',
           include: ['test/e2e/**/*.e2e-spec.ts'],
+          setupFiles: ['./test/support/setup/worker-database.ts'],
         },
       },
     ],

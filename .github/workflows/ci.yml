@@ -100,8 +100,8 @@ jobs:
       - name: Preparar configuração de testes
         run: cp .env.test.example .env.test
 
-      - name: Aplicar migrations
-        run: pnpm db:migrate:deploy
+      - name: Criar bancos por worker e aplicar migrations
+        run: pnpm db:test:prepare 4
 
       - name: Testes de integração
         run: pnpm test:integration

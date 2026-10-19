@@ -27,10 +27,10 @@ Push na main / Pull Request
          CI aprovada
 ```
 
-| Job           | Passos                                                                                                         |
-| ------------- | -------------------------------------------------------------------------------------------------------------- |
-| `quality`     | `pnpm install --frozen-lockfile`, `prisma:generate`, `lint`, `format:check`, `typecheck`, `build`, `test:unit` |
-| `integration` | Service container `postgres:17-alpine` (porta 5433), `db:migrate:deploy`, `test:integration`, `test:e2e`       |
+| Job           | Passos                                                                                                                                    |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `quality`     | `pnpm install --frozen-lockfile`, `prisma:generate`, `lint`, `format:check`, `typecheck`, `build`, `test:unit`                            |
+| `integration` | Service container `postgres:17-alpine` (porta 5433), `db:test:prepare 4` (bancos por worker + migrations), `test:integration`, `test:e2e` |
 
 - O pnpm vem do `packageManager` do `package.json` (sem `version` no `pnpm/action-setup`).
 - Hoje o job `integration` usa um service container do GitHub Actions. Na URL-20 ele passa a rodar `pnpm test:docker`, que sobe o `docker-compose.test.yml`, cria um banco por worker, aplica migrations e faz o teardown.

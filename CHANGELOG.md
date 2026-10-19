@@ -13,6 +13,8 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Prisma ORM 7 com `@prisma/adapter-pg`, `prisma.config.ts`, `PrismaModule` e `PrismaService` (falha no startup sem banco).
 - Tabela `urls` e primeira migration (`create_urls_table`).
 - Scripts `prisma:generate`, `db:migrate`, `db:migrate:deploy`, `db:migrate:reset` e `db:studio`.
+- PostgreSQL de testes isolado (`docker-compose.test.yml`), um banco por worker (1–4) com migrations, guarda contra banco que não é de teste, limpeza entre testes e scripts `db:test:up` / `db:test:prepare` / `db:test:down`.
+- Testes de integração das migrations e da guarda do banco de testes.
 - GitHub Actions: `ci.yml` (qualidade + integração com PostgreSQL) e `release.yml` (manual).
 
 ## [0.1.0] - 2026-10-19
