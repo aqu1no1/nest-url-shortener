@@ -59,25 +59,6 @@ jobs:
     name: Integração e E2E (PostgreSQL isolado)
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: url_shortener_test
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d url_shortener_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
-    env:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5433/url_shortener_test
-
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -97,14 +78,5 @@ jobs:
       - name: Gerar Prisma Client
         run: pnpm prisma:generate
 
-      - name: Preparar configuração de testes
-        run: cp .env.test.example .env.test
-
-      - name: Criar bancos por worker e aplicar migrations
-        run: pnpm db:test:prepare 4
-
-      - name: Testes de integração
-        run: pnpm test:integration
-
-      - name: Testes E2E
-        run: pnpm test:e2e
+      - name: Testes de integração e E2E
+        run: pnpm test:docker 4

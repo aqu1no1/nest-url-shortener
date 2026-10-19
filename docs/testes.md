@@ -8,37 +8,36 @@
 
 ## Comandos
 
-Disponíveis agora:
-
 ```bash
-pnpm test               # todos os projetos
-pnpm test:unit
+pnpm test:unit                    # unitários, sem Docker
 pnpm test:unit:watch
-pnpm test:cov
-pnpm test:integration   # precisa dos bancos de teste (abaixo)
-pnpm test:e2e           # precisa dos bancos de teste; passa sem testes
+pnpm test:cov                     # cobertura dos unitários
+pnpm test:docker                  # integração + E2E com Docker, 4 workers
+pnpm test:docker 2                # 2 workers (1 a 4)
+pnpm test:integration:docker 2    # só integração
+pnpm test:e2e:docker 1            # só E2E
+pnpm test:docker 2 -t "shortCode" # argumentos extras vão para o Vitest
 ```
 
-Banco de testes (integração e E2E):
+O `test:docker` (`test/support/setup/run-test-suite.mjs`):
+
+1. cria o `.env.test` a partir do `.env.test.example`, se ele não existir;
+2. sobe o `docker-compose.test.yml` e espera o healthcheck;
+3. cria `url_shortener_test_1..N` e aplica as migrations (`prepare-test-dbs.mjs N`);
+4. roda o Vitest com `--maxWorkers N`, então cada worker tem o seu banco;
+5. executa `docker compose down -v` **sempre**: com sucesso, com falha nos testes ou com Ctrl+C/SIGTERM (exit 130/143);
+6. sai com o código do Vitest.
+
+Passo a passo manual, para depurar com o banco de pé:
 
 ```bash
-cp .env.test.example .env.test   # uma vez
-pnpm db:test:up                  # sobe o docker-compose.test.yml (porta 5433, dados em tmpfs)
-pnpm db:test:prepare 4           # cria url_shortener_test_1..4 e aplica as migrations (1 a 4)
-pnpm test:integration
-pnpm db:test:down                # remove container e volumes
+pnpm db:test:up
+pnpm db:test:prepare 4
+pnpm test:integration             # ou: pnpm vitest --project integration --maxWorkers 2 (com 2 bancos)
+pnpm db:test:down
 ```
 
-> Prepare tantos bancos quanto workers. O Vitest usa até 4 (`maxWorkers`), então, se preparar menos, rode com `--maxWorkers <n>`. O runner `test:docker` (URL-20) vai alinhar isso e fazer o teardown automaticamente, inclusive em falha.
-
-Planejados (URL-20, v0.5.0):
-
-```bash
-pnpm test:docker                 # integração + E2E, até 4 workers
-pnpm test:docker 1               # 1 worker
-pnpm test:integration:docker 2
-pnpm test:e2e:docker 1
-```
+> No modo manual, prepare tantos bancos quanto workers (o Vitest usa até 4).
 
 ## Estrutura
 
@@ -71,6 +70,7 @@ test/
     └── setup/
         ├── test-database.mjs       # guarda, .env.test e URL por worker
         ├── prepare-test-dbs.mjs    # cria 1–4 bancos e aplica migrations
+        ├── run-test-suite.mjs      # runner do test:docker (up → prepare → vitest → down)
         └── worker-database.ts      # setupFile: DATABASE_URL = <base>_<VITEST_POOL_ID>
 ```
 
@@ -80,14 +80,13 @@ test/
 | Banco por worker          | A `DATABASE_URL` do `.env.test` é a base (`url_shortener_test`); cada worker usa `url_shortener_test_<VITEST_POOL_ID>`                                      |
 | Guarda                    | Exige `NODE_ENV=test` e banco com nome terminado em `_test` ou `_test_N`; vale no prepare, no setup dos workers, no client e na limpeza                     |
 | Limpeza                   | `truncateAllTables` faz `TRUNCATE ... RESTART IDENTITY CASCADE` em todas as tabelas, exceto `_prisma_migrations`; chame no `beforeEach`                     |
-| Teardown                  | `pnpm db:test:down` (`down -v`)                                                                                                                             |
+| Teardown                  | Automático no `test:docker` (inclusive em falha/sinal); manual com `pnpm db:test:down` (`down -v`)                                                          |
 
 - Use **no máximo 4 workers** (definido em `vitest.config.mts`).
 - Vitest usa `unplugin-swc` para emitir metadados de decorators (DI do NestJS).
 - `fixtures/` e `mocks/` em `test/support/` são criadas quando necessárias.
-- Runners Docker (`test:docker [1..4]`, teardown automático): URL-20 (v0.5.0).
 
-## Fluxo de integração e E2E _(runner automático na URL-20)_
+## Fluxo de integração e E2E
 
 ```mermaid
 flowchart TD
@@ -104,7 +103,7 @@ flowchart TD
 - Docker de testes separado do de desenvolvimento.
 - 1 a 4 workers (4 por padrão); cada worker tem seu próprio banco.
 - `test/support/setup/prepare-test-dbs.mjs` prepara bancos e aplica migrations.
-- O runner verifica `NODE_ENV=test` e recusa limpar bancos de desenvolvimento/produção.
+- O runner define `NODE_ENV=test`, e a guarda recusa bancos de desenvolvimento/produção.
 - Dados são limpos **entre testes do mesmo worker**.
 - Containers e volumes são encerrados mesmo quando os testes falham.
 - Mesma estratégia localmente e no GitHub Actions.

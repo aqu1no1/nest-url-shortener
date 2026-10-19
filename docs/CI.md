@@ -27,13 +27,13 @@ Push na main / Pull Request
          CI aprovada
 ```
 
-| Job           | Passos                                                                                                                                    |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `quality`     | `pnpm install --frozen-lockfile`, `prisma:generate`, `lint`, `format:check`, `typecheck`, `build`, `test:unit`                            |
-| `integration` | Service container `postgres:17-alpine` (porta 5433), `db:test:prepare 4` (bancos por worker + migrations), `test:integration`, `test:e2e` |
+| Job           | Passos                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| `quality`     | `pnpm install --frozen-lockfile`, `prisma:generate`, `lint`, `format:check`, `typecheck`, `build`, `test:unit` |
+| `integration` | `pnpm test:docker 4` (Compose de testes, 4 bancos com migrations, Vitest integração + E2E, teardown)           |
 
 - O pnpm vem do `packageManager` do `package.json` (sem `version` no `pnpm/action-setup`).
-- Hoje o job `integration` usa um service container do GitHub Actions. Na URL-20 ele passa a rodar `pnpm test:docker`, que sobe o `docker-compose.test.yml`, cria um banco por worker, aplica migrations e faz o teardown.
+- O job `integration` roda exatamente o mesmo `pnpm test:docker` usado localmente; o runner do GitHub já tem Docker e Compose.
 - Para as falhas bloquearem o merge, ative a branch protection da `main` exigindo os checks `quality` e `integration` (configuração do GitHub).
 
 ## `release.yml` — manual (**Run workflow**)

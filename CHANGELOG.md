@@ -15,7 +15,8 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Scripts `prisma:generate`, `db:migrate`, `db:migrate:deploy`, `db:migrate:reset` e `db:studio`.
 - PostgreSQL de testes isolado (`docker-compose.test.yml`), um banco por worker (1–4) com migrations, guarda contra banco que não é de teste, limpeza entre testes e scripts `db:test:up` / `db:test:prepare` / `db:test:down`.
 - Testes de integração das migrations e da guarda do banco de testes.
-- GitHub Actions: `ci.yml` (qualidade + integração com PostgreSQL) e `release.yml` (manual).
+- Runner `test:docker [1-4]` (+ `test:integration:docker` e `test:e2e:docker`): sobe o Compose de testes, prepara os bancos, roda o Vitest com N workers e faz teardown mesmo em falha ou sinal.
+- GitHub Actions: `ci.yml` (qualidade + `test:docker 4`) e `release.yml` (manual).
 
 ## [0.1.0] - 2026-10-19
 

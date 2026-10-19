@@ -30,6 +30,9 @@
     "test:unit:watch": "vitest --project unit",
     "test:integration": "vitest run --project integration",
     "test:e2e": "vitest run --project e2e --passWithNoTests",
+    "test:docker": "node test/support/setup/run-test-suite.mjs all",
+    "test:integration:docker": "node test/support/setup/run-test-suite.mjs integration",
+    "test:e2e:docker": "node test/support/setup/run-test-suite.mjs e2e",
     "test:cov": "vitest run --project unit --coverage"
   },
   "dependencies": {
