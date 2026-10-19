@@ -62,6 +62,42 @@ describe('URLs (HTTP)', () => {
     expect(response.body.data).toMatchObject({ shortCode, url: 'https://www.example.com/updated' });
   });
 
+  describe('timestamps', () => {
+    it('createdAt e updatedAt saem em ISO 8601 e começam iguais', async () => {
+      const { createdAt, updatedAt } = (await create()).body.data;
+
+      expect(new Date(createdAt).toISOString()).toBe(createdAt);
+      expect(updatedAt).toBe(createdAt);
+    });
+
+    it('GET e /stats não alteram updatedAt', async () => {
+      const { shortCode, updatedAt } = (await create()).body.data;
+
+      await request(app.getHttpServer()).get(`/shorten/${shortCode}`).expect(200);
+      const stats = await request(app.getHttpServer())
+        .get(`/shorten/${shortCode}/stats`)
+        .expect(200);
+
+      expect(stats.body.data.updatedAt).toBe(updatedAt);
+    });
+
+    it('PUT avança updatedAt e mantém createdAt', async () => {
+      const created = (await create()).body.data;
+
+      const updated = (
+        await request(app.getHttpServer())
+          .put(`/shorten/${created.shortCode}`)
+          .send({ url: 'https://www.example.com/updated' })
+          .expect(200)
+      ).body.data;
+
+      expect(updated.createdAt).toBe(created.createdAt);
+      expect(new Date(updated.updatedAt).getTime()).toBeGreaterThan(
+        new Date(created.updatedAt).getTime(),
+      );
+    });
+  });
+
   it('DELETE /shorten/:code responde 204 sem corpo', async () => {
     const { shortCode } = (await create()).body.data;
 

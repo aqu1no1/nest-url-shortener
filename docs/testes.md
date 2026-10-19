@@ -61,14 +61,16 @@ test/
 │   ├── migrations.int-spec.ts      # migration aplicada, colunas, defaults, UNIQUE, limpeza
 │   └── test-database.int-spec.ts   # guarda contra banco que não é de teste
 ├── e2e/
-│   └── urls.e2e-spec.ts            # HTTP real: envelope, 204, Problem Details, i18n pt-BR/en
+│   ├── health.e2e-spec.ts          # GET /health sem envelope
+│   ├── swagger.e2e-spec.ts         # /docs e /docs/openapi.json (envelope e Problem Details documentados)
+│   └── urls.e2e-spec.ts            # HTTP real: cinco endpoints, envelope, 204, timestamps, Problem Details, i18n
 └── support/
     ├── database/
     │   ├── client.ts               # createTestPrismaClient()
     │   └── cleanup.ts              # truncateAllTables(prisma)
     ├── factories/                  # url.factory.ts (v0.3.0)
     ├── helpers/
-    │   └── create-test-app.ts      # app a partir do AppModule (mesmo pipe/interceptor/filtro)
+    │   └── create-test-app.ts      # app a partir do AppModule; createTestApp({ swagger: true }) monta o Swagger
     └── setup/
         ├── test-database.mjs       # guarda, .env.test e URL por worker
         ├── prepare-test-dbs.mjs    # cria 1–4 bancos e aplica migrations

@@ -20,7 +20,7 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Erros no formato RFC 9457 (`application/problem+json`) com `ProblemDetailsFilter`, incluindo `errors` por campo na validação e mensagem genérica em 5xx.
 - i18n com `nestjs-i18n`: pt-BR (padrão) e en, via `Accept-Language` ou `?lang=`, para validação, erros e Problem Details.
 - `@ApiDataResponse()` e `@ApiProblemResponse()` documentando envelope e Problem Details no Swagger.
-- Testes E2E (Supertest) do contrato HTTP.
+- Testes E2E (Supertest) do contrato HTTP, incluindo timestamps e Swagger.
 - Collections Postman e Bruno com os cinco endpoints e o health: testes, exemplos de 201/200/204/400/404/503 e variáveis `shortCode` e `lang`.
 - `GET /health`: verifica a app e o PostgreSQL (`SELECT 1` com timeout de 3 s), sem envelope; responde 503 em Problem Details quando o banco está indisponível.
 
