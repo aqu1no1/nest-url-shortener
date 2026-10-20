@@ -11,4 +11,8 @@ export interface AppConfig {
   swagger: {
     enabled: boolean;
   };
+  throttle: {
+    ttl: number;
+    limit: number;
+  };
 }

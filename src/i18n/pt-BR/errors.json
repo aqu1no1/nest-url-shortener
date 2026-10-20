@@ -1,4 +1,5 @@
 {
   "NOT_FOUND": "Não foi possível encontrar {entity}.",
-  "DATABASE_UNAVAILABLE": "O banco de dados está indisponível."
+  "DATABASE_UNAVAILABLE": "O banco de dados está indisponível.",
+  "GENERATION_FAILED": "Não foi possível gerar {entity}."
 }

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SHORT_CODE_LENGTH,
+  generateShortCode,
   MAX_SHORT_CODE_LENGTH,
-} from '@/common/constants/short-code.constants';
-import { generateShortCode } from '@/common/utils/generate-short-code';
+} from '@/common/utils/generate-short-code';
 
 describe('generateShortCode', () => {
   it(`gera ${DEFAULT_SHORT_CODE_LENGTH} caracteres por padrão`, () => {

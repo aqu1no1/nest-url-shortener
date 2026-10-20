@@ -9,12 +9,12 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### Added
 
-- Esqueleto do `UrlsModule` (`UrlsController` em `/shorten` com a tag `URLs` e `UrlsService` com `PrismaService`), ainda sem endpoints.
+- `UrlsModule` (`UrlsController` em `/shorten` com a tag `URLs` e `UrlsService` com `PrismaService`).
 - DTOs `CreateUrlDto` / `UpdateUrlDto` com validação de URL http(s).
-- Responses `UrlResponse` / `UrlStatsResponse` com documentação no Swagger e conversão a partir do model.
+- DTOs de resposta `UrlResponseDto` / `UrlStatsResponseDto` com documentação no Swagger e conversão a partir do model.
 - `generateShortCode()` (base62, `crypto.randomInt`).
 - Endpoints `POST /shorten`, `GET /shorten/:code`, `PUT /shorten/:code`, `DELETE /shorten/:code` e `GET /shorten/:code/stats`, com documentação Swagger.
-- Contagem de acessos atômica no `GET /shorten/:code` (sem alterar `updatedAt`); colisões de código tratadas com novas tentativas.
+- Contagem de acessos atômica no `GET /shorten/:code` (sem alterar `updatedAt`); colisões de código tratadas com novas tentativas e, após 5, erro 500 traduzido.
 - Testes unitários do `UrlsService` e testes de integração com PostgreSQL.
 - Envelope `{ data }` nas respostas de sucesso (`ResponseEnvelopeInterceptor`, `@SkipResponseEnvelope()`), preservando 204 e respostas `{ data, meta }`.
 - Erros no formato RFC 9457 (`application/problem+json`) com `ProblemDetailsFilter`, incluindo `errors` por campo na validação e mensagem genérica em 5xx.
@@ -23,6 +23,19 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Testes E2E (Supertest) do contrato HTTP, incluindo timestamps e Swagger.
 - Collections Postman e Bruno com os cinco endpoints e o health: testes, exemplos de 201/200/204/400/404/503 e variáveis `shortCode` e `lang`.
 - `GET /health`: verifica a app e o PostgreSQL (`SELECT 1` com timeout de 3 s), sem envelope; responde 503 em Problem Details quando o banco está indisponível.
+- Rate limit por IP com `@nestjs/throttler` (em memória): `THROTTLE_LIMIT` requisições a cada `THROTTLE_TTL` segundos (padrão 100/60 s), `429` em Problem Details com `Retry-After` e headers `X-RateLimit-*`; `/health` fica fora do limite.
+- `ShortCodePipe` (`common/pipes/`): `:code` fora do formato (base62, 1 a 12 caracteres) responde 404 sem consultar o banco.
+- Corpo acima de 100 kB responde 413 em Problem Details (erros 4xx do Express mantêm o status no `ProblemDetailsFilter`).
+- `url` limitada a 2048 caracteres e sem caracteres de controle.
+- Respostas 413 e 429 documentadas no Swagger, com o formato do `:code` (`pattern`) e o `maxLength` da `url`.
+- ADRs 0002 (UUIDv7), 0003 (contrato HTTP) e 0004 (limites de abuso) e matriz de testes em `docs/testes.md`.
+
+### Changed
+
+- `Url.id` passa de `SERIAL` para UUIDv7, gerado pelo Prisma Client; a migration `use_uuid_v7_for_url_id` preenche as linhas existentes a partir de `created_at`.
+- Serviço do Compose renomeado de `postgres` para `db`, com containers `url-shortener-db` e `url-shortener-test-db`. Ambientes locais existentes precisam de `docker compose down --remove-orphans` uma vez.
+- A versão do OpenAPI vem do `package.json` (antes, `0.1.0` quando a app rodava fora dos scripts do pnpm).
+- Header `X-Powered-By` desligado.
 
 ## [0.2.0] - 2026-10-19
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Url } from '@/generated/prisma/client';
-import { UrlStatsResponse } from '@/modules/urls/responses/url-stats.response';
-import { UrlResponse } from '@/modules/urls/responses/url.response';
+import { UrlResponseDto } from '@/modules/urls/dto/url-response.dto';
+import { UrlStatsResponseDto } from '@/modules/urls/dto/url-stats-response.dto';
 
 const entity: Url = {
   id: '019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b',
@@ -12,11 +12,11 @@ const entity: Url = {
   updatedAt: new Date('2026-10-19T12:30:00.000Z'),
 };
 
-describe('UrlResponse', () => {
+describe('UrlResponseDto', () => {
   it('expõe o id e omite accessCount', () => {
-    const response = UrlResponse.fromEntity(entity);
+    const response = UrlResponseDto.fromEntity(entity);
 
-    expect(response).toBeInstanceOf(UrlResponse);
+    expect(response).toBeInstanceOf(UrlResponseDto);
     expect(response).toEqual({
       id: entity.id,
       url: entity.url,
@@ -27,18 +27,18 @@ describe('UrlResponse', () => {
   });
 
   it('serializa as datas em ISO 8601', () => {
-    expect(JSON.parse(JSON.stringify(UrlResponse.fromEntity(entity)))).toMatchObject({
+    expect(JSON.parse(JSON.stringify(UrlResponseDto.fromEntity(entity)))).toMatchObject({
       createdAt: '2026-10-19T12:00:00.000Z',
       updatedAt: '2026-10-19T12:30:00.000Z',
     });
   });
 });
 
-describe('UrlStatsResponse', () => {
+describe('UrlStatsResponseDto', () => {
   it('inclui accessCount', () => {
-    const response = UrlStatsResponse.fromEntity(entity);
+    const response = UrlStatsResponseDto.fromEntity(entity);
 
-    expect(response).toBeInstanceOf(UrlStatsResponse);
+    expect(response).toBeInstanceOf(UrlStatsResponseDto);
     expect(response).toMatchObject({ id: entity.id, shortCode: 'abc123', accessCount: 10 });
   });
 });

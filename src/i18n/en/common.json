@@ -15,5 +15,9 @@
   },
   "VALIDATION_FAILED": "The request contains invalid fields.",
   "INTERNAL_ERROR": "An unexpected error occurred.",
-  "ROUTE_NOT_FOUND": "The route {method} {path} does not exist."
+  "ROUTE_NOT_FOUND": "The route {method} {path} does not exist.",
+  "CLIENT_ERROR": {
+    "413": "The request body exceeds the maximum allowed size."
+  },
+  "TOO_MANY_REQUESTS": "Too many requests. Try again shortly."
 }

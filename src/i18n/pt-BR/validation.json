@@ -2,5 +2,6 @@
   "URL_REQUIRED": "url é obrigatória.",
   "URL_STRING": "url deve ser um texto.",
   "URL_INVALID": "url deve ser uma URL válida com http ou https.",
+  "URL_TOO_LONG": "url deve ter no máximo {max} caracteres.",
   "PROPERTY_NOT_ALLOWED": "A propriedade {property} não é permitida."
 }

@@ -1,7 +1,3 @@
-export const SHORT_CODE_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+import { MAX_SHORT_CODE_LENGTH } from '@/common/utils/generate-short-code';
 
-export const DEFAULT_SHORT_CODE_LENGTH = 6;
-
-export const MAX_SHORT_CODE_LENGTH = 12;
-
-export const MAX_SHORT_CODE_ATTEMPTS = 5;
+export const SHORT_CODE_PATTERN = new RegExp(`^[0-9A-Za-z]{1,${MAX_SHORT_CODE_LENGTH}}$`);

@@ -1,15 +1,18 @@
 import { Controller, Get, HttpStatus, ServiceUnavailableException } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { I18nService } from 'nestjs-i18n';
-import { DATABASE_CHECK_TIMEOUT_MS } from '@/common/constants/health.constants';
 import { ApiProblemResponse } from '@/common/decorators/api-problem-response.decorator';
 import { SkipResponseEnvelope } from '@/common/decorators/skip-response-envelope.decorator';
 import type { HealthStatus } from '@/common/interfaces/health-status.interface';
 import { PrismaService } from '@/modules/prisma/prisma.service';
 
+export const DATABASE_CHECK_TIMEOUT_MS = 3000;
+
 @ApiTags('Health')
 @Controller('health')
 @SkipResponseEnvelope()
+@SkipThrottle()
 export class HealthController {
   constructor(
     private readonly prisma: PrismaService,

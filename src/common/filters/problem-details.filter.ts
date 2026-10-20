@@ -22,6 +22,20 @@ import type {
 const TRANSLATION_KEY = /^[a-z]+\.[A-Z0-9_]+$/;
 const ROUTE_NOT_FOUND = /^Cannot [A-Z]+ /;
 
+interface ClientHttpError extends Error {
+  status: number;
+  expose: true;
+}
+
+function isClientHttpError(exception: unknown): exception is ClientHttpError {
+  if (!(exception instanceof Error) || !('expose' in exception) || exception.expose !== true) {
+    return false;
+  }
+
+  const { status } = exception as { status?: unknown };
+  return typeof status === 'number' && status >= 400 && status < 500;
+}
+
 @Catch()
 export class ProblemDetailsFilter implements ExceptionFilter {
   private readonly logger = new Logger(ProblemDetailsFilter.name);
@@ -34,8 +48,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     const response = http.getResponse<Response>();
     const lang = I18nContext.current(host)?.lang ?? DEFAULT_LANGUAGE;
 
-    const status =
-      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = this.status(exception);
 
     if (status >= 500) {
       this.logger.error(exception instanceof Error ? exception.stack : String(exception));
@@ -56,11 +69,23 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     response.status(status).type(PROBLEM_JSON).json(problem);
   }
 
+  private status(exception: unknown): number {
+    if (exception instanceof HttpException) {
+      return exception.getStatus();
+    }
+
+    return isClientHttpError(exception) ? exception.status : HttpStatus.INTERNAL_SERVER_ERROR;
+  }
+
   private title(status: number, lang: string): string {
     return this.translate(`common.HTTP.${status}`, lang) ?? STATUS_CODES[status] ?? 'Error';
   }
 
   private detail(exception: unknown, request: Request, lang: string): string {
+    if (isClientHttpError(exception)) {
+      return this.translate(`common.CLIENT_ERROR.${exception.status}`, lang) ?? exception.message;
+    }
+
     if (!(exception instanceof HttpException)) {
       return this.translate('common.INTERNAL_ERROR', lang) ?? 'An unexpected error occurred.';
     }
@@ -120,8 +145,19 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       return this.translate('validation.PROPERTY_NOT_ALLOWED', lang, { property }) ?? raw;
     }
 
-    const [key] = raw.split('|');
-    return (TRANSLATION_KEY.test(key) && this.translate(key, lang, { property })) || raw;
+    const separator = raw.indexOf('|');
+    const key = separator === -1 ? raw : raw.slice(0, separator);
+    const args = separator === -1 ? {} : this.validationArgs(raw.slice(separator + 1));
+
+    return (TRANSLATION_KEY.test(key) && this.translate(key, lang, { ...args, property })) || raw;
+  }
+
+  private validationArgs(json: string): Record<string, unknown> {
+    try {
+      return JSON.parse(json) as Record<string, unknown>;
+    } catch {
+      return {};
+    }
   }
 
   private translate(key: string, lang: string, args?: Record<string, unknown>): string | undefined {

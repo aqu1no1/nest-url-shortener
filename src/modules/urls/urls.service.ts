@@ -1,13 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
-import { MAX_SHORT_CODE_ATTEMPTS } from '@/common/constants/short-code.constants';
 import { generateShortCode } from '@/common/utils/generate-short-code';
 import type { Url } from '@/generated/prisma/client';
 import { PrismaService } from '@/modules/prisma/prisma.service';
 import type { CreateUrlDto } from '@/modules/urls/dto/create-url.dto';
 import type { UpdateUrlDto } from '@/modules/urls/dto/update-url.dto';
-import { UrlStatsResponse } from '@/modules/urls/responses/url-stats.response';
-import { UrlResponse } from '@/modules/urls/responses/url.response';
+import { UrlResponseDto } from '@/modules/urls/dto/url-response.dto';
+import { UrlStatsResponseDto } from '@/modules/urls/dto/url-stats-response.dto';
+
+export const MAX_SHORT_CODE_ATTEMPTS = 5;
 
 @Injectable()
 export class UrlsService {
@@ -16,7 +17,7 @@ export class UrlsService {
     private readonly i18n: I18nService,
   ) {}
 
-  async create({ dto }: { dto: CreateUrlDto }): Promise<UrlResponse> {
+  async create({ dto }: { dto: CreateUrlDto }): Promise<UrlResponseDto> {
     for (let attempt = 1; attempt <= MAX_SHORT_CODE_ATTEMPTS; attempt++) {
       const [created] = await this.prisma.url.createManyAndReturn({
         data: { url: dto.url, shortCode: generateShortCode() },
@@ -24,14 +25,18 @@ export class UrlsService {
       });
 
       if (created) {
-        return UrlResponse.fromEntity(created);
+        return UrlResponseDto.fromEntity(created);
       }
     }
 
-    throw new Error('Não foi possível gerar um código curto único.');
+    throw new InternalServerErrorException(
+      this.i18n.t('errors.GENERATION_FAILED', {
+        args: { entity: this.i18n.t('entities.SHORT_CODE') },
+      }),
+    );
   }
 
-  async findByCode({ shortCode }: { shortCode: string }): Promise<UrlResponse> {
+  async findByCode({ shortCode }: { shortCode: string }): Promise<UrlResponseDto> {
     const [url] = await this.prisma.$queryRaw<Url[]>`
       UPDATE urls
       SET access_count = access_count + 1
@@ -46,46 +51,62 @@ export class UrlsService {
     `;
 
     if (!url) {
-      throw this.notFound();
+      throw new NotFoundException(
+        this.i18n.t('errors.NOT_FOUND', {
+          args: { entity: this.i18n.t('entities.URL') },
+        }),
+      );
     }
 
-    return UrlResponse.fromEntity(url);
+    return UrlResponseDto.fromEntity(url);
   }
 
-  async update({ shortCode, dto }: { shortCode: string; dto: UpdateUrlDto }): Promise<UrlResponse> {
+  async update({
+    shortCode,
+    dto,
+  }: {
+    shortCode: string;
+    dto: UpdateUrlDto;
+  }): Promise<UrlResponseDto> {
     const [updated] = await this.prisma.url.updateManyAndReturn({
       where: { shortCode },
       data: { url: dto.url },
     });
 
     if (!updated) {
-      throw this.notFound();
+      throw new NotFoundException(
+        this.i18n.t('errors.NOT_FOUND', {
+          args: { entity: this.i18n.t('entities.URL') },
+        }),
+      );
     }
 
-    return UrlResponse.fromEntity(updated);
+    return UrlResponseDto.fromEntity(updated);
   }
 
   async remove({ shortCode }: { shortCode: string }): Promise<void> {
     const { count } = await this.prisma.url.deleteMany({ where: { shortCode } });
 
     if (count === 0) {
-      throw this.notFound();
+      throw new NotFoundException(
+        this.i18n.t('errors.NOT_FOUND', {
+          args: { entity: this.i18n.t('entities.URL') },
+        }),
+      );
     }
   }
 
-  async getStats({ shortCode }: { shortCode: string }): Promise<UrlStatsResponse> {
+  async getStats({ shortCode }: { shortCode: string }): Promise<UrlStatsResponseDto> {
     const url = await this.prisma.url.findUnique({ where: { shortCode } });
 
     if (!url) {
-      throw this.notFound();
+      throw new NotFoundException(
+        this.i18n.t('errors.NOT_FOUND', {
+          args: { entity: this.i18n.t('entities.URL') },
+        }),
+      );
     }
 
-    return UrlStatsResponse.fromEntity(url);
-  }
-
-  private notFound(): NotFoundException {
-    return new NotFoundException(
-      this.i18n.t('errors.NOT_FOUND', { args: { entity: this.i18n.t('entities.URL') } }),
-    );
+    return UrlStatsResponseDto.fromEntity(url);
   }
 }

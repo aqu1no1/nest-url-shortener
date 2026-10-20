@@ -22,6 +22,21 @@ pnpm start:dev
 
 Swagger UI: <http://localhost:3000/docs> · OpenAPI: <http://localhost:3000/docs/openapi.json>
 
+## API
+
+| Método   | Endpoint               | Descrição                                       |
+| -------- | ---------------------- | ----------------------------------------------- |
+| `POST`   | `/shorten`             | Encurta uma URL (`201`)                         |
+| `GET`    | `/shorten/:code`       | Recupera a URL original e conta um acesso       |
+| `PUT`    | `/shorten/:code`       | Atualiza a URL mantendo o código                |
+| `DELETE` | `/shorten/:code`       | Exclui a URL (`204`)                            |
+| `GET`    | `/shorten/:code/stats` | Estatísticas (`accessCount`), sem contar acesso |
+| `GET`    | `/health`              | App e PostgreSQL                                |
+
+- Sucesso em `{ "data": ... }`; erros em Problem Details (RFC 9457), em pt-BR ou en (`?lang=en` / `Accept-Language`).
+- Rate limit de 100 requisições por minuto por IP (configurável), `url` com até 2048 caracteres e corpo com até 100 kB. Detalhes em [API → Limites](docs/api.md#limites).
+- Collections prontas em `collections/` (Postman e Bruno).
+
 ## Scripts
 
 | Comando                              | Descrição                                                                 |

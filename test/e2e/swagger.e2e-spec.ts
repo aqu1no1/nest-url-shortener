@@ -1,8 +1,12 @@
+import { readFileSync } from 'node:fs';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { OPENAPI_JSON_PATH, SWAGGER_PATH } from '@/common/constants/swagger.constants';
+import { SHORT_CODE_PATTERN } from '@/common/constants/short-code.constants';
+import { SWAGGER_PATH } from '@/common/constants/swagger.constants';
+import { OPENAPI_JSON_PATH } from '@/config/swagger';
+import { MAX_URL_LENGTH } from '@/modules/urls/dto/create-url.dto';
 import { createTestApp } from '@test/support/helpers/create-test-app';
 
 describe('Swagger (HTTP)', () => {
@@ -45,9 +49,34 @@ describe('Swagger (HTTP)', () => {
     expect(post['201'].content['application/json'].schema).toEqual({
       type: 'object',
       required: ['data'],
-      properties: { data: { $ref: '#/components/schemas/UrlResponse' } },
+      properties: { data: { $ref: '#/components/schemas/UrlResponseDto' } },
     });
     expect(post['400'].content).toHaveProperty(['application/problem+json']);
     expect(body.paths['/shorten/{code}'].delete.responses['204']).toBeDefined();
+  });
+
+  it('usa a versão do package.json', async () => {
+    const { body } = await request(app.getHttpServer()).get(`/${OPENAPI_JSON_PATH}`).expect(200);
+
+    const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string };
+
+    expect(body.info.version).toBe(version);
+  });
+
+  it('documenta limites: 413, 429, formato do código e tamanho da url', async () => {
+    const { body } = await request(app.getHttpServer()).get(`/${OPENAPI_JSON_PATH}`).expect(200);
+    const byCode = body.paths['/shorten/{code}'];
+
+    expect(Object.keys(body.paths['/shorten'].post.responses)).toEqual(
+      expect.arrayContaining(['413', '429']),
+    );
+    expect(Object.keys(byCode.put.responses)).toEqual(expect.arrayContaining(['413', '429']));
+    expect(byCode.get.parameters).toContainEqual(
+      expect.objectContaining({
+        name: 'code',
+        schema: expect.objectContaining({ pattern: SHORT_CODE_PATTERN.source, example: 'abc123' }),
+      }),
+    );
+    expect(body.components.schemas.CreateUrlDto.properties.url.maxLength).toBe(MAX_URL_LENGTH);
   });
 });

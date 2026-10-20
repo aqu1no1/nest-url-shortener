@@ -22,7 +22,13 @@ describe('envValidationSchema', () => {
     });
 
     expect(error).toBeUndefined();
-    expect(value).toMatchObject({ NODE_ENV: 'development', PORT: 3000, SWAGGER_ENABLED: true });
+    expect(value).toMatchObject({
+      NODE_ENV: 'development',
+      PORT: 3000,
+      SWAGGER_ENABLED: true,
+      THROTTLE_TTL: 60,
+      THROTTLE_LIMIT: 100,
+    });
   });
 
   it('exige DATABASE_URL', () => {
@@ -44,5 +50,11 @@ describe('envValidationSchema', () => {
     const { error } = envValidationSchema.validate({ ...validEnv, NODE_ENV: 'staging' });
 
     expect(error).toBeDefined();
+  });
+
+  it.each(['THROTTLE_TTL', 'THROTTLE_LIMIT'])('rejeita %s menor que 1', (name) => {
+    const { error } = envValidationSchema.validate({ ...validEnv, [name]: '0' });
+
+    expect(error?.message).toContain(name);
   });
 });

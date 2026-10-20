@@ -7,4 +7,6 @@ export interface EnvironmentVariables {
   PORT: number;
   DATABASE_URL: string;
   SWAGGER_ENABLED: boolean;
+  THROTTLE_TTL: number;
+  THROTTLE_LIMIT: number;
 }

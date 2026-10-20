@@ -3,6 +3,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '@/modules/prisma/prisma.service';
+import { MAX_URL_LENGTH } from '@/modules/urls/dto/create-url.dto';
 import { truncateAllTables } from '@test/support/database/cleanup';
 import { createTestApp } from '@test/support/helpers/create-test-app';
 import { UUID_V7_PATTERN } from '@test/support/helpers/uuid';
@@ -111,7 +112,7 @@ describe('URLs (HTTP)', () => {
   describe('Problem Details (RFC 9457) e i18n', () => {
     it('404 em pt-BR por padrão', async () => {
       const response = await request(app.getHttpServer())
-        .get('/shorten/nao-existe')
+        .get('/shorten/naoexiste')
         .expect(404)
         .expect('content-type', PROBLEM_JSON);
 
@@ -120,13 +121,13 @@ describe('URLs (HTTP)', () => {
         title: 'Não encontrado',
         status: 404,
         detail: 'Não foi possível encontrar a URL.',
-        instance: '/shorten/nao-existe',
+        instance: '/shorten/naoexiste',
       });
     });
 
     it('404 em inglês com Accept-Language: en', async () => {
       const response = await request(app.getHttpServer())
-        .get('/shorten/nao-existe')
+        .get('/shorten/naoexiste')
         .set('Accept-Language', 'en-US,en;q=0.9')
         .expect(404);
 
@@ -167,6 +168,36 @@ describe('URLs (HTTP)', () => {
       ]);
     });
 
+    it.each([
+      ['put', '/shorten/naoexiste'],
+      ['delete', '/shorten/naoexiste'],
+      ['get', '/shorten/naoexiste/stats'],
+    ] as const)('%s %s responde 404 para código inexistente', async (method, path) => {
+      const server = request(app.getHttpServer());
+      const response = await server[method](path)
+        .send({ url: 'https://example.com' })
+        .expect(404)
+        .expect('content-type', PROBLEM_JSON);
+
+      expect(response.body).toMatchObject({ detail: 'Não foi possível encontrar a URL.' });
+    });
+
+    it('PUT /shorten/:code responde 400 para url inválida sem alterar o registro', async () => {
+      const { shortCode, url } = (await create()).body.data;
+
+      const response = await request(app.getHttpServer())
+        .put(`/shorten/${shortCode}`)
+        .send({ url: 'ftp://example.com' })
+        .expect(400)
+        .expect('content-type', PROBLEM_JSON);
+
+      expect(response.body.errors).toEqual([
+        { field: 'url', messages: ['url deve ser uma URL válida com http ou https.'] },
+      ]);
+      const stats = await request(app.getHttpServer()).get(`/shorten/${shortCode}/stats`);
+      expect(stats.body.data.url).toBe(url);
+    });
+
     it('rota inexistente também vira Problem Details', async () => {
       const response = await request(app.getHttpServer())
         .get('/nada')
@@ -174,6 +205,71 @@ describe('URLs (HTTP)', () => {
         .expect('content-type', PROBLEM_JSON);
 
       expect(response.body).toMatchObject({ detail: 'A rota GET /nada não existe.' });
+    });
+  });
+
+  describe('limites e entradas malformadas', () => {
+    it.each([
+      ['get', '/shorten/%00'],
+      ['get', '/shorten/%00/stats'],
+      ['delete', '/shorten/%00'],
+      ['put', '/shorten/%00'],
+      ['get', `/shorten/${'a'.repeat(13)}`],
+      ['get', '/shorten/abc-12'],
+    ] as const)('%s %s responde 404 para código fora do formato', async (method, path) => {
+      const server = request(app.getHttpServer());
+      const response = await server[method](path)
+        .send({ url: 'https://example.com' })
+        .expect(404)
+        .expect('content-type', PROBLEM_JSON);
+
+      expect(response.body).toMatchObject({ detail: 'Não foi possível encontrar a URL.' });
+    });
+
+    it('400 para url com caractere de controle', async () => {
+      const response = await create('https://example.com/\u0000').expect(400);
+
+      expect(response.body.errors).toEqual([
+        { field: 'url', messages: ['url deve ser uma URL válida com http ou https.'] },
+      ]);
+    });
+
+    it(`400 para url com mais de ${MAX_URL_LENGTH} caracteres, traduzido via ?lang=en`, async () => {
+      const response = await request(app.getHttpServer())
+        .post('/shorten?lang=en')
+        .send({ url: `https://example.com/${'a'.repeat(MAX_URL_LENGTH)}` })
+        .expect(400);
+
+      expect(response.body.errors).toEqual([
+        {
+          field: 'url',
+          messages: expect.arrayContaining([`url must have at most ${MAX_URL_LENGTH} characters.`]),
+        },
+      ]);
+    });
+
+    it('413 em Problem Details para corpo acima do limite do Express', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/shorten')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify({ url: `https://example.com/${'a'.repeat(200_000)}` }))
+        .expect(413)
+        .expect('content-type', PROBLEM_JSON);
+
+      expect(response.body).toEqual({
+        type: 'about:blank',
+        title: 'Conteúdo muito grande',
+        status: 413,
+        detail: 'O corpo da requisição excede o tamanho máximo permitido.',
+        instance: '/shorten',
+      });
+    });
+
+    it('informa o rate limit nos headers', async () => {
+      const response = await create().expect(201);
+
+      expect(response.headers).toHaveProperty('x-ratelimit-limit');
+      expect(response.headers).toHaveProperty('x-ratelimit-remaining');
     });
   });
 });

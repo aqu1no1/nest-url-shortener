@@ -96,3 +96,5 @@ Criar milestone no Linear ou dar merge na `main` **não** dispara release. Deplo
 | `v0.4.0` | Estatísticas, contagem, interceptors e Problem Details                       |
 | `v0.5.0` | Integração/E2E, 1–4 workers, collections e GitHub Actions                    |
 | `v1.0.0` | API revisada, testes verdes, documentação e release estável                  |
+
+As milestones `v0.3.0` a `v0.5.0` não foram publicadas separadamente; o escopo delas saiu na `v1.0.0`.

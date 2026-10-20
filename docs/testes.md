@@ -58,19 +58,22 @@ Um único `vitest.config.mts` com [projetos](https://vitest.dev/guide/projects) 
 ```text
 test/
 ├── integration/
-│   ├── migrations.int-spec.ts      # migration aplicada, colunas, defaults, UNIQUE, limpeza
-│   └── test-database.int-spec.ts   # guarda contra banco que não é de teste
+│   ├── migrations.int-spec.ts      # migrations aplicadas, colunas, defaults (UUIDv7), UNIQUE, limpeza
+│   ├── test-database.int-spec.ts   # guarda contra banco que não é de teste
+│   └── urls.int-spec.ts            # UrlsService com PostgreSQL real: colisão, contagem atômica, 404
 ├── e2e/
 │   ├── health.e2e-spec.ts          # GET /health sem envelope
-│   ├── swagger.e2e-spec.ts         # /docs e /docs/openapi.json (envelope e Problem Details documentados)
-│   └── urls.e2e-spec.ts            # HTTP real: cinco endpoints, envelope, 204, timestamps, Problem Details, i18n
+│   ├── swagger.e2e-spec.ts         # /docs e /docs/openapi.json (envelope, Problem Details, limites, versão)
+│   ├── throttle.e2e-spec.ts        # 429 em Problem Details, Retry-After, /health fora do limite
+│   └── urls.e2e-spec.ts            # HTTP real: cinco endpoints, envelope, 204, timestamps, Problem Details, i18n, limites
 └── support/
     ├── database/
     │   ├── client.ts               # createTestPrismaClient()
     │   └── cleanup.ts              # truncateAllTables(prisma)
-    ├── factories/                  # url.factory.ts (v0.3.0)
+    ├── factories/                  # vazia por enquanto (.gitkeep)
     ├── helpers/
-    │   └── create-test-app.ts      # app a partir do AppModule; createTestApp({ swagger: true }) monta o Swagger
+    │   ├── create-test-app.ts      # app a partir do AppModule; { swagger: true } monta o Swagger, { throttle } troca o rate limit
+    │   └── uuid.ts                 # UUID_V7_PATTERN
     └── setup/
         ├── test-database.mjs       # guarda, .env.test e URL por worker
         ├── prepare-test-dbs.mjs    # cria 1–4 bancos e aplica migrations
@@ -112,14 +115,31 @@ flowchart TD
 - Containers e volumes são encerrados mesmo quando os testes falham.
 - Mesma estratégia localmente e no GitHub Actions.
 
-## Critérios mínimos por endpoint
+## Matriz de testes
 
-| Endpoint                   | Testes mínimos                                        |
-| -------------------------- | ----------------------------------------------------- |
-| `POST /shorten`            | URL válida/inválida, 201/400, código único e colisões |
-| `GET /shorten/:code`       | Existe/não existe, 200/404 e política de contagem     |
-| `PUT /shorten/:code`       | Atualização válida/inválida, timestamps, 200/400/404  |
-| `DELETE /shorten/:code`    | Remover, 204 sem corpo, 404                           |
-| `GET /shorten/:code/stats` | `accessCount`, 200/404, sem incremento acidental      |
+**U** = unitário, **I** = integração (PostgreSQL), **E** = E2E (HTTP).
 
-Também testar envelope `{ data }`, erros RFC 9457, `ValidationPipe`, URLs do Swagger e migrations em banco limpo.
+| Endpoint                   | Cenário                                                          | U   | I   | E   |
+| -------------------------- | ---------------------------------------------------------------- | --- | --- | --- |
+| `POST /shorten`            | `201` com `{ data }`, `id` UUIDv7 e `shortCode` base62           | ✓   | ✓   | ✓   |
+|                            | Código sorteado já existe: tenta outro (até 5 vezes)             | ✓   | ✓   |     |
+|                            | `400`: url ausente, não texto, sem http/https, campo extra       | ✓   |     | ✓   |
+|                            | `400`: url acima de 2048 caracteres ou com caractere de controle | ✓   |     | ✓   |
+|                            | `413`: corpo acima de 100 kB                                     | ✓   |     | ✓   |
+| `GET /shorten/:code`       | `200` e conta um acesso por chamada, sem alterar `updatedAt`     | ✓   | ✓   | ✓   |
+|                            | 25 acessos concorrentes contados de forma atômica                |     | ✓   |     |
+|                            | `404` para código inexistente, em pt-BR e en                     | ✓   | ✓   | ✓   |
+|                            | `404` para código fora do formato (byte nulo, longo, não base62) | ✓   |     | ✓   |
+| `PUT /shorten/:code`       | `200`, mantém o código, avança `updatedAt` e mantém `createdAt`  | ✓   | ✓   | ✓   |
+|                            | `400` para url inválida, sem alterar o registro                  | ✓   |     | ✓   |
+|                            | `404` para código inexistente ou fora do formato                 | ✓   | ✓   | ✓   |
+| `DELETE /shorten/:code`    | `204` sem corpo; depois, `GET` responde `404`                    | ✓   | ✓   | ✓   |
+|                            | `404` para código inexistente ou fora do formato                 | ✓   | ✓   | ✓   |
+| `GET /shorten/:code/stats` | `200` com `accessCount`, sem incrementar                         | ✓   | ✓   | ✓   |
+|                            | `404` para código inexistente ou fora do formato                 | ✓   | ✓   | ✓   |
+| Todas as rotas `/shorten`  | `429` em Problem Details com `Retry-After` (pt-BR e en)          |     |     | ✓   |
+|                            | Headers `X-RateLimit-*`                                          |     |     | ✓   |
+| `GET /health`              | `200` sem envelope; fora do rate limit                           |     |     | ✓   |
+| Swagger                    | UI, OpenAPI, envelope, Problem Details, 413/429, versão          |     |     | ✓   |
+
+Peças transversais com testes unitários: `ResponseEnvelopeInterceptor`, `ProblemDetailsFilter` (tradução, validação com argumentos, `http-errors`, 5xx), `generateShortCode`, `ShortCodePipe`, `envValidationSchema` e `UrlResponseDto`/`UrlStatsResponseDto`. As migrations são testadas em banco limpo (`migrations.int-spec.ts`).

@@ -15,5 +15,9 @@
   },
   "VALIDATION_FAILED": "A requisição contém campos inválidos.",
   "INTERNAL_ERROR": "Ocorreu um erro inesperado.",
-  "ROUTE_NOT_FOUND": "A rota {method} {path} não existe."
+  "ROUTE_NOT_FOUND": "A rota {method} {path} não existe.",
+  "CLIENT_ERROR": {
+    "413": "O corpo da requisição excede o tamanho máximo permitido."
+  },
+  "TOO_MANY_REQUESTS": "Muitas requisições. Tente novamente em instantes."
 }

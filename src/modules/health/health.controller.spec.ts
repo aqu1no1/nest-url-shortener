@@ -1,8 +1,7 @@
 import { ServiceUnavailableException } from '@nestjs/common';
 import type { I18nService } from 'nestjs-i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DATABASE_CHECK_TIMEOUT_MS } from '@/common/constants/health.constants';
-import { HealthController } from '@/modules/health/health.controller';
+import { DATABASE_CHECK_TIMEOUT_MS, HealthController } from '@/modules/health/health.controller';
 import type { PrismaService } from '@/modules/prisma/prisma.service';
 
 const i18n = {

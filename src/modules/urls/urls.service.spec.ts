@@ -1,10 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import type { I18nService } from 'nestjs-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAX_SHORT_CODE_ATTEMPTS } from '@/common/constants/short-code.constants';
 import type { Url } from '@/generated/prisma/client';
 import type { PrismaService } from '@/modules/prisma/prisma.service';
-import { UrlsService } from '@/modules/urls/urls.service';
+import { MAX_SHORT_CODE_ATTEMPTS, UrlsService } from '@/modules/urls/urls.service';
 
 const entity: Url = {
   id: '019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b',
@@ -15,9 +14,16 @@ const entity: Url = {
   updatedAt: new Date('2026-10-19T12:00:00.000Z'),
 };
 
+const translations: Record<string, string> = {
+  'errors.NOT_FOUND': 'Não foi possível encontrar {entity}.',
+  'errors.GENERATION_FAILED': 'Não foi possível gerar {entity}.',
+  'entities.URL': 'a URL',
+  'entities.SHORT_CODE': 'um código curto único',
+};
+
 const i18n = {
   t: vi.fn<(key: string, options?: { args?: { entity?: string } }) => string>((key, options) =>
-    key === 'errors.NOT_FOUND' ? `Não foi possível encontrar ${options?.args?.entity}.` : 'a URL',
+    (translations[key] ?? key).replace('{entity}', options?.args?.entity ?? ''),
   ),
 } as unknown as I18nService;
 
@@ -71,9 +77,10 @@ describe('UrlsService', () => {
     it(`desiste após ${MAX_SHORT_CODE_ATTEMPTS} colisões`, async () => {
       prisma.url.createManyAndReturn.mockResolvedValue([]);
 
-      await expect(service.create({ dto: { url: entity.url } })).rejects.toThrow(
-        'Não foi possível gerar um código curto único.',
-      );
+      const create = service.create({ dto: { url: entity.url } });
+
+      await expect(create).rejects.toBeInstanceOf(InternalServerErrorException);
+      await expect(create).rejects.toThrow('Não foi possível gerar um código curto único.');
       expect(prisma.url.createManyAndReturn).toHaveBeenCalledTimes(MAX_SHORT_CODE_ATTEMPTS);
     });
   });

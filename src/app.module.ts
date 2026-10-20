@@ -1,14 +1,17 @@
 import { join } from 'node:path';
 import { Module, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { DEFAULT_LANGUAGE } from '@/common/constants/i18n.constants';
 import { ProblemDetailsFilter } from '@/common/filters/problem-details.filter';
 import { RequestValidationException } from '@/common/filters/request-validation.exception';
 import { ResponseEnvelopeInterceptor } from '@/common/interceptors/response-envelope.interceptor';
+import type { AppConfig } from '@/common/interfaces/app-config.interface';
 import configuration from '@/config/configuration';
 import { envValidationSchema } from '@/config/env.validation';
+import { throttlerOptions } from '@/config/throttler';
 import { HealthModule } from '@/modules/health/health.module';
 import { PrismaModule } from '@/modules/prisma/prisma.module';
 import { UrlsModule } from '@/modules/urls/urls.module';
@@ -29,6 +32,11 @@ import { UrlsModule } from '@/modules/urls/urls.module';
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
       logging: false,
     }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<AppConfig, true>) =>
+        throttlerOptions(config.get('throttle', { infer: true })),
+    }),
     PrismaModule,
     HealthModule,
     UrlsModule,
@@ -43,6 +51,7 @@ import { UrlsModule } from '@/modules/urls/urls.module';
         exceptionFactory: (errors) => new RequestValidationException(errors),
       }),
     },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: ResponseEnvelopeInterceptor },
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },
   ],

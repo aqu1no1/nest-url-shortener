@@ -16,24 +16,31 @@ import { RequestValidationException } from '@/common/filters/request-validation.
 const translations: Record<string, string> = {
   'common.HTTP.400': 'Requisição inválida',
   'common.HTTP.404': 'Não encontrado',
+  'common.HTTP.413': 'Conteúdo muito grande',
+  'common.HTTP.429': 'Muitas requisições',
   'common.HTTP.500': 'Erro interno do servidor',
   'common.HTTP.503': 'Serviço indisponível',
   'common.VALIDATION_FAILED': 'A requisição contém campos inválidos.',
   'common.INTERNAL_ERROR': 'Ocorreu um erro inesperado.',
   'common.ROUTE_NOT_FOUND': 'A rota {method} {path} não existe.',
+  'common.CLIENT_ERROR.413': 'O corpo da requisição excede o tamanho máximo permitido.',
+  'common.TOO_MANY_REQUESTS': 'Muitas requisições. Tente novamente em instantes.',
   'validation.URL_INVALID': 'url deve ser uma URL válida com http ou https.',
+  'validation.URL_TOO_LONG': 'url deve ter no máximo {max} caracteres.',
   'validation.PROPERTY_NOT_ALLOWED': 'A propriedade {property} não é permitida.',
 };
 
 const i18n = {
-  translate: vi.fn<(key: string, options?: { args?: Record<string, string> }) => string>(
+  translate: vi.fn<(key: string, options?: { args?: Record<string, unknown> }) => string>(
     (key, options) =>
-      (translations[key] ?? '').replace(
-        /\{(\w+)\}/g,
-        (_, name: string) => options?.args?.[name] ?? '',
+      (translations[key] ?? '').replace(/\{(\w+)\}/g, (_, name: string) =>
+        String(options?.args?.[name] ?? ''),
       ),
   ),
 } as unknown as I18nService;
+
+const httpError = (status: number, message: string) =>
+  Object.assign(new Error(message), { status, statusCode: status, expose: true });
 
 const createHost = (method = 'GET', url = '/shorten/abc123') => {
   const response = {
@@ -103,6 +110,66 @@ describe('ProblemDetailsFilter', () => {
         ],
       }),
     );
+  });
+
+  it('interpola os argumentos de i18nValidationMessage', () => {
+    const { host, response } = createHost('POST', '/shorten');
+    const errors: ValidationError[] = [
+      {
+        property: 'url',
+        constraints: {
+          maxLength:
+            'validation.URL_TOO_LONG|{"value":"https://x","constraints":[2048],"max":2048}',
+        },
+        children: [],
+      },
+    ];
+
+    filter.catch(new RequestValidationException(errors), host);
+
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errors: [{ field: 'url', messages: ['url deve ter no máximo 2048 caracteres.'] }],
+      }),
+    );
+  });
+
+  it('respeita o status de erros 4xx do Express (http-errors)', () => {
+    const log = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    const { host, response } = createHost('POST', '/shorten');
+
+    filter.catch(httpError(413, 'request entity too large'), host);
+
+    expect(response.status).toHaveBeenCalledWith(413);
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 413,
+        title: 'Conteúdo muito grande',
+        detail: 'O corpo da requisição excede o tamanho máximo permitido.',
+      }),
+    );
+    expect(log).not.toHaveBeenCalled();
+    log.mockRestore();
+  });
+
+  it('usa a mensagem do http-errors quando não há tradução para o status', () => {
+    const { host, response } = createHost('POST', '/shorten');
+
+    filter.catch(httpError(415, 'unsupported charset "UTF-7"'), host);
+
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 415, detail: 'unsupported charset "UTF-7"' }),
+    );
+  });
+
+  it('trata como 500 erros com status que não devem ser expostos', () => {
+    const log = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    const { host, response } = createHost();
+
+    filter.catch(Object.assign(new Error('falha'), { status: 400, expose: false }), host);
+
+    expect(response.status).toHaveBeenCalledWith(500);
+    log.mockRestore();
   });
 
   it('traduz mensagens no formato namespace.CHAVE', () => {
