@@ -7,6 +7,7 @@ import type { PrismaService } from '@/modules/prisma/prisma.service';
 import { UrlsService } from '@/modules/urls/urls.service';
 import { truncateAllTables } from '@test/support/database/cleanup';
 import { createTestPrismaClient } from '@test/support/database/client';
+import { UUID_V7_PATTERN } from '@test/support/helpers/uuid';
 
 vi.mock('@/common/utils/generate-short-code', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/common/utils/generate-short-code')>();
@@ -42,7 +43,10 @@ describe('UrlsService (PostgreSQL)', () => {
   it('cria e persiste a URL com accessCount 0', async () => {
     const created = await service.create({ dto: { url: 'https://example.com/a' } });
 
-    expect(created).toMatchObject({ id: '1', url: 'https://example.com/a' });
+    expect(created).toMatchObject({
+      id: expect.stringMatching(UUID_V7_PATTERN),
+      url: 'https://example.com/a',
+    });
     await expect(
       prisma.url.findUnique({ where: { shortCode: created.shortCode } }),
     ).resolves.toMatchObject({ accessCount: 0 });

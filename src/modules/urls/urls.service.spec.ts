@@ -7,7 +7,7 @@ import type { PrismaService } from '@/modules/prisma/prisma.service';
 import { UrlsService } from '@/modules/urls/urls.service';
 
 const entity: Url = {
-  id: 1,
+  id: '019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b',
   url: 'https://www.example.com/some/long/url',
   shortCode: 'abc123',
   accessCount: 3,
@@ -52,7 +52,7 @@ describe('UrlsService', () => {
         data: { url: entity.url, shortCode: expect.stringMatching(/^[0-9A-Za-z]{6}$/) },
         skipDuplicates: true,
       });
-      expect(response).toMatchObject({ id: '1', shortCode: 'abc123' });
+      expect(response).toMatchObject({ id: entity.id, shortCode: 'abc123' });
       expect(response).not.toHaveProperty('accessCount');
     });
 

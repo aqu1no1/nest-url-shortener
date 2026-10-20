@@ -91,7 +91,7 @@
                   "value": "application/json; charset=utf-8"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
+              "body": "{\n  \"data\": {\n    \"id\": \"019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
             },
             {
               "name": "400 Bad Request",
@@ -190,7 +190,7 @@
                   "value": "application/json; charset=utf-8"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
+              "body": "{\n  \"data\": {\n    \"id\": \"019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
             },
             {
               "name": "404 Not Found",
@@ -302,7 +302,7 @@
                   "value": "application/json; charset=utf-8"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/updated/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:30:00.000Z\"\n  }\n}"
+              "body": "{\n  \"data\": {\n    \"id\": \"019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b\",\n    \"url\": \"https://www.example.com/some/updated/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:30:00.000Z\"\n  }\n}"
             },
             {
               "name": "400 Bad Request",
@@ -441,7 +441,7 @@
                   "value": "application/json; charset=utf-8"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": \"1\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\",\n    \"accessCount\": 10\n  }\n}"
+              "body": "{\n  \"data\": {\n    \"id\": \"019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b\",\n    \"url\": \"https://www.example.com/some/long/url\",\n    \"shortCode\": \"abc123\",\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-19T12:00:00.000Z\",\n    \"accessCount\": 10\n  }\n}"
             },
             {
               "name": "404 Not Found",

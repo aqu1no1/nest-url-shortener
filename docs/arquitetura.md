@@ -64,7 +64,7 @@ Registrado no `AppModule`:
 Peças de apoio, com testes unitários ao lado:
 
 - `dto/create-url.dto.ts` e `dto/update-url.dto.ts`: `url` obrigatória, texto, `http`/`https` com protocolo (mensagens em português); `UpdateUrlDto` estende `CreateUrlDto`;
-- `responses/url.response.ts` (`UrlResponse`) e `responses/url-stats.response.ts` (`UrlStatsResponse`, com `accessCount`): `fromEntity()` converte o model do Prisma, com `id` como string e datas em ISO 8601;
+- `responses/url.response.ts` (`UrlResponse`) e `responses/url-stats.response.ts` (`UrlStatsResponse`, com `accessCount`): `fromEntity()` converte o model do Prisma, com `id` UUIDv7 e datas em ISO 8601;
 - `generateShortCode(length = 6)` (`common/utils/generate-short-code.ts`): base62 com `crypto.randomInt`, de 1 a 12 caracteres (o limite da coluna); as constantes ficam em `common/constants/short-code.constants.ts`.
 
 Testes: `urls.service.spec.ts` (unitário, Prisma mockado) e `test/integration/urls.int-spec.ts` (PostgreSQL real, incluindo 25 acessos concorrentes).

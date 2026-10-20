@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '@/modules/prisma/prisma.service';
 import { truncateAllTables } from '@test/support/database/cleanup';
 import { createTestApp } from '@test/support/helpers/create-test-app';
+import { UUID_V7_PATTERN } from '@test/support/helpers/uuid';
 
 const PROBLEM_JSON = /application\/problem\+json/;
 
@@ -31,7 +32,7 @@ describe('URLs (HTTP)', () => {
 
     expect(response.body).toEqual({
       data: {
-        id: '1',
+        id: expect.stringMatching(UUID_V7_PATTERN),
         url: 'https://www.example.com/some/long/url',
         shortCode: expect.stringMatching(/^[0-9A-Za-z]{6}$/),
         createdAt: expect.any(String),

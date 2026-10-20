@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { Prisma, type PrismaClient } from '@/generated/prisma/client';
 import { truncateAllTables } from '@test/support/database/cleanup';
 import { createTestPrismaClient } from '@test/support/database/client';
+import { UUID_V7_PATTERN } from '@test/support/helpers/uuid';
 
 describe('migrations', () => {
   let prisma: PrismaClient;
@@ -27,18 +28,21 @@ describe('migrations', () => {
     expect(name).toMatch(/^url_shortener_test_[1-4]$/);
   });
 
-  it('aplicou a migration create_urls_table', async () => {
-    const migrations = await prisma.$queryRaw<{ migration_name: string; finished: boolean }[]>`
+  it.each(['create_urls_table', 'use_uuid_v7_for_url_id'])(
+    'aplicou a migration %s',
+    async (name) => {
+      const migrations = await prisma.$queryRaw<{ migration_name: string; finished: boolean }[]>`
       SELECT migration_name, finished_at IS NOT NULL AS finished FROM _prisma_migrations
     `;
 
-    expect(migrations).toContainEqual(
-      expect.objectContaining({
-        migration_name: expect.stringMatching(/_create_urls_table$/),
-        finished: true,
-      }),
-    );
-  });
+      expect(migrations).toContainEqual(
+        expect.objectContaining({
+          migration_name: expect.stringMatching(new RegExp(`_${name}$`)),
+          finished: true,
+        }),
+      );
+    },
+  );
 
   it('cria a tabela urls com colunas snake_case', async () => {
     const columns = await prisma.$queryRaw<{ column_name: string; data_type: string }[]>`
@@ -48,12 +52,12 @@ describe('migrations', () => {
     `;
 
     expect(columns).toEqual([
-      { column_name: 'id', data_type: 'integer' },
       { column_name: 'url', data_type: 'text' },
       { column_name: 'short_code', data_type: 'character varying' },
       { column_name: 'access_count', data_type: 'integer' },
       { column_name: 'created_at', data_type: 'timestamp with time zone' },
       { column_name: 'updated_at', data_type: 'timestamp with time zone' },
+      { column_name: 'id', data_type: 'uuid' },
     ]);
   });
 
@@ -62,7 +66,7 @@ describe('migrations', () => {
       data: { url: 'https://example.com', shortCode: 'abc123' },
     });
 
-    expect(created).toMatchObject({ id: 1, accessCount: 0 });
+    expect(created).toMatchObject({ id: expect.stringMatching(UUID_V7_PATTERN), accessCount: 0 });
     expect(created.createdAt).toBeInstanceOf(Date);
     expect(created.updatedAt).toBeInstanceOf(Date);
   });

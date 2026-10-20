@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import type { Url } from '@/generated/prisma/client';
 
 export class UrlResponse {
-  @ApiProperty({ example: '1' })
+  @ApiProperty({ format: 'uuid', example: '019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b' })
   id: string;
 
   @ApiProperty({ example: 'https://www.example.com/some/long/url' })
@@ -19,7 +19,7 @@ export class UrlResponse {
 
   static fromEntity(entity: Url): UrlResponse {
     return Object.assign(new UrlResponse(), {
-      id: String(entity.id),
+      id: entity.id,
       url: entity.url,
       shortCode: entity.shortCode,
       createdAt: entity.createdAt,

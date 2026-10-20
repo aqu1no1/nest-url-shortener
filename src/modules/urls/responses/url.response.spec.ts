@@ -4,7 +4,7 @@ import { UrlStatsResponse } from '@/modules/urls/responses/url-stats.response';
 import { UrlResponse } from '@/modules/urls/responses/url.response';
 
 const entity: Url = {
-  id: 1,
+  id: '019a01b2-3c4d-7e5f-8a9b-0c1d2e3f4a5b',
   url: 'https://www.example.com/some/long/url',
   shortCode: 'abc123',
   accessCount: 10,
@@ -13,12 +13,12 @@ const entity: Url = {
 };
 
 describe('UrlResponse', () => {
-  it('expõe o id como string e omite accessCount', () => {
+  it('expõe o id e omite accessCount', () => {
     const response = UrlResponse.fromEntity(entity);
 
     expect(response).toBeInstanceOf(UrlResponse);
     expect(response).toEqual({
-      id: '1',
+      id: entity.id,
       url: entity.url,
       shortCode: 'abc123',
       createdAt: entity.createdAt,
@@ -39,6 +39,6 @@ describe('UrlStatsResponse', () => {
     const response = UrlStatsResponse.fromEntity(entity);
 
     expect(response).toBeInstanceOf(UrlStatsResponse);
-    expect(response).toMatchObject({ id: '1', shortCode: 'abc123', accessCount: 10 });
+    expect(response).toMatchObject({ id: entity.id, shortCode: 'abc123', accessCount: 10 });
   });
 });
