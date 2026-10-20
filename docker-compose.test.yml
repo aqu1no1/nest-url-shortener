@@ -1,7 +1,8 @@
 name: url-shortener-test
 
 services:
-  postgres:
+  db:
+    container_name: url-shortener-test-db
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

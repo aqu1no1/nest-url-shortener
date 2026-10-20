@@ -1,7 +1,8 @@
 name: url-shortener
 
 services:
-  postgres:
+  db:
+    container_name: url-shortener-db
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
