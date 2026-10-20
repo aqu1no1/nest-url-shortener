@@ -7,6 +7,10 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-20
+
+Primeira versão estável. Inclui o escopo planejado para as milestones v0.3.0, v0.4.0 e v0.5.0, que não foram publicadas separadamente.
+
 ### Added
 
 - `UrlsModule` (`UrlsController` em `/shorten` com a tag `URLs` e `UrlsService` com `PrismaService`).
@@ -64,6 +68,7 @@ e o projeto adota o [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Collections Postman e Bruno com environment `local` (`baseUrl`, `shortCode`).
 - Documentação em `docs/`.
 
-[Unreleased]: https://github.com/aqu1no1/nest-url-shortener/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/aqu1no1/nest-url-shortener/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/aqu1no1/nest-url-shortener/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/aqu1no1/nest-url-shortener/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/aqu1no1/nest-url-shortener/releases/tag/v0.1.0
