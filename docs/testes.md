@@ -1,4 +1,4 @@
-# Testes
+# Testes e comandos
 
 | Tipo       | Local                               | Docker? | Finalidade                                                      |
 | ---------- | ----------------------------------- | ------- | --------------------------------------------------------------- |
@@ -143,3 +143,34 @@ flowchart TD
 | Swagger                    | UI, OpenAPI, envelope, Problem Details, 413/429, versão          |     |     | ✓   |
 
 Peças transversais com testes unitários: `ResponseEnvelopeInterceptor`, `ProblemDetailsFilter` (tradução, validação com argumentos, `http-errors`, 5xx), `generateShortCode`, `ShortCodePipe`, `envValidationSchema` e `UrlResponseDto`/`UrlStatsResponseDto`. As migrations são testadas em banco limpo (`migrations.int-spec.ts`).
+
+## Todos os scripts
+
+| Comando                              | Descrição                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| `pnpm start:dev`                     | Inicia em modo watch                                                      |
+| `pnpm build`                         | Compila para `dist/`                                                      |
+| `pnpm start:prod`                    | Executa o build                                                           |
+| `pnpm db:up`                         | Sobe o PostgreSQL de desenvolvimento                                      |
+| `pnpm db:down`                       | Para o PostgreSQL de desenvolvimento                                      |
+| `pnpm db:migrate`                    | Cria/aplica migration em dev (`--name <nome>`)                            |
+| `pnpm db:migrate:deploy`             | Aplica migrations pendentes                                               |
+| `pnpm db:migrate:reset`              | Recria o banco de dev                                                     |
+| `pnpm db:studio`                     | Prisma Studio                                                             |
+| `pnpm db:test:up`                    | Sobe o PostgreSQL de testes (`docker-compose.test.yml`)                   |
+| `pnpm db:test:prepare [1-4]`         | Cria os bancos por worker e aplica migrations                             |
+| `pnpm db:test:down`                  | Remove o PostgreSQL de testes e volumes                                   |
+| `pnpm prisma:generate`               | Gera o Prisma Client                                                      |
+| `pnpm typecheck`                     | Verifica tipos                                                            |
+| `pnpm lint`                          | Oxlint                                                                    |
+| `pnpm format`                        | Formata com Oxfmt                                                         |
+| `pnpm format:check`                  | Verifica formatação                                                       |
+| `pnpm test`                          | Todos os testes (projetos unit, integration e e2e)                        |
+| `pnpm test:unit`                     | Testes unitários (Vitest)                                                 |
+| `pnpm test:unit:watch`               | Testes unitários em watch                                                 |
+| `pnpm test:integration`              | Testes de integração                                                      |
+| `pnpm test:e2e`                      | Testes E2E                                                                |
+| `pnpm test:docker [1-4]`             | Integração + E2E com PostgreSQL em Docker (sobe, prepara, roda e derruba) |
+| `pnpm test:integration:docker [1-4]` | Só integração, com Docker                                                 |
+| `pnpm test:e2e:docker [1-4]`         | Só E2E, com Docker                                                        |
+| `pnpm test:cov`                      | Cobertura dos testes unitários                                            |
